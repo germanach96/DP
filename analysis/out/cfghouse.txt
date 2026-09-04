@@ -1,0 +1,59 @@
+==========================================================================================
+CFG PROFILE: P_US_ULTA vs P_US_ALL_OTHERS
+==========================================================================================
+
+P_US_ULTA
+  active lines            74
+  volume last 12m            5,326,048 u  (43% of scope)
+  forward book               5,816,324 u
+  demand lost to cuts            16.5%  (1,049,976 u)
+  median line volatility          0.86 CV
+  median months active             54%
+
+P_US_ALL_OTHERS
+  active lines            130
+  volume last 12m            6,930,891 u  (57% of scope)
+  forward book              14,340,477 u
+  demand lost to cuts             7.0%  (517,877 u)
+  median line volatility          0.91 CV
+  median months active             75%
+
+EPOS signal quality by CFG:
+  P_US_ULTA          coverage 52%   lines with EPOS 92%   best lag 3m (r=+0.56)
+  P_US_ALL_OTHERS    coverage 46%   lines with EPOS 95%   best lag 3m (r=+0.45)
+
+==========================================================================================
+HOUSE PROFILES
+==========================================================================================
+
+Burberry Make up
+  product lines 27   volume L12M     127,240 u   YoY    +60%   forward book     570,774 u
+  demand lost to cuts   0.7%   peak months: Oct (398), Nov (264), Apr (137)
+
+Gucci
+  product lines 64   volume L12M   6,637,401 u   YoY    -11%   forward book   8,206,842 u
+  demand lost to cuts   4.5%   peak months: Jun (134), Mar (117), Sep (115)
+
+Gucci Make up
+  product lines 45   volume L12M     856,154 u   YoY    -34%   forward book     827,349 u
+  demand lost to cuts  26.6%   peak months: Mar (182), Sep (152), Jan (117)
+
+Kylie Jenner Fragrances
+  product lines 6    volume L12M   1,426,556 u   YoY    +12%   forward book   3,174,448 u
+  demand lost to cuts   0.6%   peak months: Mar (184), May (166), Jun (135)
+
+Kylie Makeup
+  product lines 60   volume L12M   3,209,588 u   YoY    -14%   forward book   7,377,389 u
+  demand lost to cuts  22.6%   peak months: Sep (150), Jun (147), Feb (123)
+
+==========================================================================================
+GUCCI FRAGRANCE MULTILINE (00003484) — reported separately
+==========================================================================================
+  volume last 12 closed months :    7,165,516 u
+  = 37% of total scope volume
+  forward book                 :    4,313,510 u
+  EPOS last 12m                :       77,951 u  (ratio to sell-in 0.011)
+  supply cuts last 12m         :       18,580 u
+  volatility (CV) by CFG       : P_US_ALL_OTHERS 1.13, P_US_ULTA 0.91
+  seasonal index               : Jan 15 Feb 14 Mar 212 Apr 140 May 43 Jun 2 Jul 37 Aug 9 Sep 304 Oct 220 Nov 183 Dec 21
+  biggest single month in history: 2024.M10 = 2,405,789 u (11x its own median month)
