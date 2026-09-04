@@ -1,0 +1,73 @@
+Lines profiled (>=1000 u in last 24 months): 201  covering 12,252,824 u
+
+===============================================================================================
+ARCHETYPES — how forecastable each group is
+===============================================================================================
+archetype                 lines   % vol     CV  active rep_yoy  cut rate   EPOS
+STABLE & REPEATABLE           5   6.7%   0.47   100%    0.40     4.5%  100%
+MODERATE                     28  30.6%   0.66   100%    0.04     6.9%  100%
+LUMPY / EVENT-DRIVEN         91  34.5%   1.57    88%   -0.04     2.3%   99%
+INTERMITTENT                 25   0.5%   3.32    25%   -0.14     0.0%   60%
+DECLINING                    29  14.5%   0.81   100%    0.24     2.9%  100%
+NEW / LAUNCH                 23  13.2%   3.31    17%     nan     0.0%   74%
+
+===============================================================================================
+FORECASTABILITY SCORE (0-100)
+===============================================================================================
+      lines       vol   cv   rep  cut vol_sh
+band                                        
+LOW      79 3,757,615 2.57 -0.17 0.0%  30.7%
+FAIR     45 1,522,595 1.50 -0.08 2.2%  12.4%
+GOOD     47 3,697,945 0.88  0.07 5.0%  30.2%
+HIGH     30 3,274,669 0.72  0.40 8.3%  26.7%
+
+By house (median score):
+                         lines  median_score       vol   cv
+House                                                      
+Gucci Make up               35          55.0   856,032 1.26
+Kylie Makeup                77          50.0 3,207,870 1.45
+Gucci                       67          45.0 6,636,103 1.60
+Burberry Make up            12          30.0   126,263 1.56
+Kylie Jenner Fragrances     10          10.0 1,426,556 2.56
+
+By CFG (median score):
+                 lines  median_score   cv active  cut
+CFG                                                  
+P_US_ALL_OTHERS    126          50.0 1.38    92% 1.5%
+P_US_ULTA           75          45.0 1.77    88% 1.0%
+
+--- The 15 most forecastable lines (build the plan on these) ---
+                  House                                        PL             CFG     vol  score   cv active rep_yoy
+                  Gucci             Gucci Guilty PF 21 (00005854) P_US_ALL_OTHERS 124,489    100 0.55   100%    0.75
+           Kylie Makeup               Kylie Gel Pencil (00006114)       P_US_ULTA  18,137    100 0.44   100%    0.53
+                  Gucci              Gorgeous Gardenia (00005915) P_US_ALL_OTHERS 979,060     90 0.61   100%    0.61
+                  Gucci         Gucci Guilty PH NEW 22 (00006019)       P_US_ULTA   8,084     90 0.82   100%    0.53
+                  Gucci        Gucci Guilty Pour Homme (00003463) P_US_ALL_OTHERS 615,401     90 0.53   100%    0.35
+          Gucci Make up Gucci Multidimensional Mascara (00005647) P_US_ALL_OTHERS  59,662     90 0.83   100%    0.75
+          Gucci Make up     Gucci Face Bronzing Powder (00005685) P_US_ALL_OTHERS  58,832     90 0.47   100%    0.37
+          Gucci Make up      Gucci Highlighting Powder (00006538) P_US_ALL_OTHERS  29,068     90 0.74   100%    0.67
+          Gucci Make up             Gucci Lip Balm Pot (00005668) P_US_ALL_OTHERS   6,761     90 0.47   100%    0.40
+          Gucci Make up                Gucci Lip Liner (00005855) P_US_ALL_OTHERS   2,410     90 0.82   100%    0.55
+          Gucci Make up              Gucci Nail Polish (00005688) P_US_ALL_OTHERS   5,941     90 0.50   100%    0.41
+Kylie Jenner Fragrances            Cosmic Kylie Jenner (00006014)       P_US_ULTA 348,819     90 0.90   100%    0.60
+           Kylie Makeup            Kylie Matte Lip Kit (00006094)       P_US_ULTA 381,230     90 0.48   100%    0.27
+           Kylie Makeup           Kylie Plumping Gloss (00006105)       P_US_ULTA  33,988     90 0.58   100%    0.31
+                  Gucci                Gucci Bloom EDT (00005943) P_US_ALL_OTHERS  42,217     80 0.75   100%    0.44
+
+--- The 15 least forecastable HIGH-VOLUME lines (these need judgement, not the system) ---
+                  House                                                 PL             CFG     vol  score   cv active rep_yoy            archetype
+                  Gucci           Gucci Guilty New27 pour Homme (00007262) P_US_ALL_OTHERS  63,614      0 4.80     4%     NaN         NEW / LAUNCH
+                  Gucci             Gucci Guilty Liqueurs PH PF (00006775) P_US_ALL_OTHERS  82,383      5 2.46    50%   -0.30 LUMPY / EVENT-DRIVEN
+                  Gucci               Gucci Bloom Ambrosia dOro (00006855) P_US_ALL_OTHERS 161,903     10 2.71    33%     NaN         NEW / LAUNCH
+                  Gucci     Gucci Flora Gorgeous Orchid Intense (00007099) P_US_ALL_OTHERS 257,929     10 3.47    12%     NaN         NEW / LAUNCH
+                  Gucci     Gucci Flora Gorgeous Orchid Intense (00007099)       P_US_ULTA  57,524     10 3.40    12%     NaN         NEW / LAUNCH
+Kylie Jenner Fragrances             Cosmic Kylie Jenner INTENSE (00007045)       P_US_ULTA 299,097     10 1.92    33%     NaN         NEW / LAUNCH
+Kylie Jenner Fragrances            Kylie Jenner Mist Collection (00007114)       P_US_ULTA  64,708     10 3.86    17%     NaN         NEW / LAUNCH
+Kylie Jenner Fragrances                Kylie Jenner Mood Stones (00007046)       P_US_ULTA 414,978     10 3.36    12%     NaN         NEW / LAUNCH
+           Kylie Makeup            Kylie Plumping Matte Lip Kit (00006788)       P_US_ULTA  55,632     10 3.97     8%     NaN         NEW / LAUNCH
+                  Gucci   Gucci Flora Gorgeous Gardenia Intense (00007022)       P_US_ULTA  86,962     20 2.07    62%   -0.22 LUMPY / EVENT-DRIVEN
+          Gucci Make up                             Gucci Cream (00006636) P_US_ALL_OTHERS 126,514     20 1.98    58%   -0.24 LUMPY / EVENT-DRIVEN
+Kylie Jenner Fragrances             Cosmic Kylie Jenner FLANKER (00006785) P_US_ALL_OTHERS  61,504     20 3.13    54%   -0.13 LUMPY / EVENT-DRIVEN
+Kylie Jenner Fragrances             Cosmic Kylie Jenner FLANKER (00006785)       P_US_ULTA  56,043     20 2.16    67%   -0.18 LUMPY / EVENT-DRIVEN
+           Kylie Makeup                      Kylie Hybrid Blush (00006713)       P_US_ULTA 119,143     20 1.42    62%   -0.20 LUMPY / EVENT-DRIVEN
+                  Gucci Gucci Luxury Collection ROSES AND MUSKS (00006656) P_US_ALL_OTHERS  57,427     25 1.90    54%    0.23 LUMPY / EVENT-DRIVEN

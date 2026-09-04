@@ -1,0 +1,30 @@
+{
+ "LOST-FORECAST": {
+  "n": 16,
+  "vol": 1701609.0
+ },
+ "PHANTOM-FORECAST": {
+  "n": 20,
+  "vol": 127.0
+ },
+ "SERVICE-LOSS": {
+  "n": 23,
+  "vol": 1593589.0
+ },
+ "OVER-BOOKED": {
+  "n": 15,
+  "vol": 1400995.0
+ },
+ "UNDER-BOOKED": {
+  "n": 49,
+  "vol": 4809472.0
+ },
+ "CONSUMER-DECLINE": {
+  "n": 13,
+  "vol": 2291345.0
+ },
+ "HORIZON-CLIFF": {
+  "n": 8,
+  "vol": 942904.0
+ }
+}
