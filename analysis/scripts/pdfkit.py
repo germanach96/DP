@@ -143,7 +143,7 @@ class Doc(BaseDocTemplate):
     def _chrome(self,c,d):
         c.saveState()
         c.setFont(F,7.6); c.setFillColor(MUTED)
-        c.drawString(ML,PH-MT+7,'O9 Scope Analysis')
+        c.drawString(ML,PH-MT+7,getattr(self,'runningTitle','O9 Scope Analysis'))
         if self.section:
             c.drawRightString(PW-MR,PH-MT+7,self.section)
         c.setStrokeColor(GRID); c.setLineWidth(0.6)
@@ -151,7 +151,7 @@ class Doc(BaseDocTemplate):
         c.line(ML,MB-8,PW-MR,MB-8)
         c.setFillColor(MUTED)
         c.drawRightString(PW-MR,MB-16,str(d.page))
-        c.drawString(ML,MB-16,'Closed history through 2026.M07')
+        c.drawString(ML,MB-16,getattr(self,'footNote','Closed history through 2026.M07'))
         c.restoreState()
 
 def tag_section(para,name):
