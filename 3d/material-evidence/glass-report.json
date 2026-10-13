@@ -1,0 +1,87 @@
+{
+  "ok": true,
+  "verdict": "pass",
+  "confidence": 0.794,
+  "estimatedFidelity": 0.794,
+  "targetThreshold": 0.7,
+  "materialId": "glass-green",
+  "sourceImage": "/home/user/DP/3d/material-evidence/glass-crop.png",
+  "outDir": "/home/user/DP/3d/material-evidence/glass",
+  "palette": [
+    "#016F57",
+    "#01674D",
+    "#5E9887",
+    "#093429",
+    "#1B745F"
+  ],
+  "maps": {
+    "albedo": {
+      "path": "/home/user/DP/3d/material-evidence/glass/glass-green_albedo.png",
+      "url": "material-evidence/glass/glass-green_albedo.png",
+      "channel": "albedo",
+      "source": "reference-pixel-extraction"
+    },
+    "roughness": {
+      "path": "/home/user/DP/3d/material-evidence/glass/glass-green_roughness.png",
+      "url": "material-evidence/glass/glass-green_roughness.png",
+      "channel": "roughness",
+      "source": "reference-pixel-extraction"
+    },
+    "height": {
+      "path": "/home/user/DP/3d/material-evidence/glass/glass-green_height.png",
+      "url": "material-evidence/glass/glass-green_height.png",
+      "channel": "height",
+      "source": "reference-pixel-extraction"
+    },
+    "normal": {
+      "path": "/home/user/DP/3d/material-evidence/glass/glass-green_normal.png",
+      "url": "material-evidence/glass/glass-green_normal.png",
+      "channel": "normal",
+      "source": "reference-pixel-extraction"
+    },
+    "ao": {
+      "path": "/home/user/DP/3d/material-evidence/glass/glass-green_ao.png",
+      "url": "material-evidence/glass/glass-green_ao.png",
+      "channel": "ao",
+      "source": "reference-pixel-extraction"
+    }
+  },
+  "diagnostics": {
+    "sourceWidth": 376,
+    "sourceHeight": 200,
+    "mapSize": 1024,
+    "cropBBoxPixels": {
+      "x": 0,
+      "y": 0,
+      "width": 376,
+      "height": 200
+    },
+    "mask": {
+      "backgroundColor": "#CAC8CB",
+      "backgroundNoise": 264.713,
+      "transparentPixelFraction": 0.0,
+      "foregroundCoverage": 0.9868
+    },
+    "mapStats": {
+      "valueRange": 0.3397,
+      "heightP90Gradient": 0.03044,
+      "roughnessBase": 0.684,
+      "roughnessVariation": 0.053,
+      "normalStrength": 0.192,
+      "blurRadius": 21
+    },
+    "palette": [
+      "#016F57",
+      "#01674D",
+      "#5E9887",
+      "#093429",
+      "#1B745F"
+    ]
+  },
+  "warnings": [
+    "image is not clearly isolated from background; using most pixels as material evidence",
+    "object/background separation is weak",
+    "single-image inverse rendering cannot prove true physical PBR; confidence is capped"
+  ],
+  "limitation": "single-image PBR extraction is an estimate; 70%+ extraction confidence still needs render screenshot review"
+}

@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="es" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Essence 90 ml · Planning US</title>
+<meta name="description" content="Demo interna de planning: frasco en 3D que gira con el scroll y cifras simuladas de forecast, stock y canales para US.">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600&display=swap" rel="stylesheet">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/examples/jsm/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<style>
+:root {
+  /* DESIGN.md tokens */
+  --color-void: #000000;
+  --color-bone-white: #ffffff;
+  --color-ash-gray: #9a9a9a;
+  --color-silver-mist: #bdbdbd;
+  --color-electric-iris: #8052ff;
+  --color-saffron-spark: #ffb829;
+  --color-deep-verdant: #15846e;
+  /* Chart series: validated steps of Saffron and Verdant on #000 (dataviz validate_palette, dark) */
+  --series-forecast: #c28418;
+  --series-ly: #1fa386;
+  --font: 'Inter', 'PPNeueMontreal', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Five sizes: small 14 · text 16 · figure 22 · statement 28 · heading 46 */
+  --text-nav: 14px;
+  --text-small: 16px;
+  --text-figure: 22px;
+  --text-statement: clamp(22px, 2vw, 28px);
+  --text-heading: clamp(28px, 3.2vw, 46px);
+  --spacing-6: 6px; --spacing-12: 12px; --spacing-18: 18px; --spacing-24: 24px;
+  --spacing-30: 30px; --spacing-36: 36px; --spacing-60: 60px; --spacing-96: 96px; --spacing-120: 120px;
+  --radius-buttons: 24px;
+  --margin: 32px;
+  --side: 31vw;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+* { box-sizing: border-box; }
+html { background: var(--color-void); color: var(--color-bone-white); scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--color-void); color: var(--color-bone-white);
+  font-family: var(--font); font-size: var(--text-small); font-weight: 200; line-height: 1.5;
+  font-feature-settings: "ss01" on; -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--color-electric-iris); color: var(--color-bone-white); }
+a { color: inherit; text-underline-offset: 4px; }
+:focus-visible { outline: 2px solid var(--color-saffron-spark); outline-offset: 4px; border-radius: 4px; }
+html { scrollbar-color: #2a2a2a var(--color-void); }
+.num { font-variant-numeric: tabular-nums lining-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* The lit exhibit: one fixed stage behind every section. */
+.stage { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.stage canvas { width: 100%; height: 100%; display: block; }
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 3;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--spacing-24) var(--margin);
+  background: var(--color-void);
+  font-size: var(--text-nav); font-weight: 600; letter-spacing: 0.025em; text-transform: uppercase;
+}
+nav .mark { display: flex; align-items: center; gap: var(--spacing-12); text-decoration: none; }
+nav .mark svg { width: 18px; height: 18px; }
+nav ul { display: flex; gap: var(--spacing-30); list-style: none; margin: 0; padding: 0; }
+nav ul a { color: var(--color-ash-gray); text-decoration: none; transition: color 150ms ease; }
+nav ul a[aria-current="true"], nav ul a:hover { color: var(--color-bone-white); }
+
+main { position: relative; z-index: 1; }
+section { position: relative; min-height: 100svh; padding: var(--spacing-120) var(--margin); }
+
+/* Hero: the counter. Bottle lit in the centre, name as a wide low wordmark, one row beneath. */
+.hero { display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 7svh; }
+.wordmark {
+  margin: 0 auto; width: 72%; text-align: center;
+  font-size: var(--text-heading); font-weight: 200; line-height: 1; letter-spacing: 0.62em;
+  text-indent: 0.62em; white-space: nowrap;
+}
+.hero .statement {
+  margin: var(--spacing-24) auto 0; max-width: 44ch; text-align: center;
+  font-size: var(--text-statement); font-weight: 200; line-height: 1.3; letter-spacing: -0.01em;
+}
+.hero-row {
+  margin-top: var(--spacing-36); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 48px;
+  font-size: var(--text-small); font-weight: 400; color: var(--color-silver-mist);
+}
+.hero-row > :first-child { text-align: right; }
+.hero-row strong { color: var(--color-bone-white); font-weight: 400; }
+
+.btn {
+  appearance: none; border: 0; cursor: pointer;
+  background: var(--color-electric-iris); color: var(--color-bone-white);
+  font: 600 var(--text-nav)/1 var(--font); letter-spacing: 0.025em; text-transform: uppercase;
+  padding: 15px 22px; border-radius: var(--radius-buttons);
+  transition: transform 160ms var(--ease-out), background-color 150ms ease;
+}
+.btn:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) { .btn:hover { background: #6a3df0; } }
+
+/* Side columns around the bottle. */
+.col { width: var(--side); }
+.col-left { margin-right: auto; }
+.col-right { margin-left: auto; }
+.mid { display: flex; align-items: center; }
+
+h2 {
+  margin: 0 0 var(--spacing-36); font-size: var(--text-heading); font-weight: 400; line-height: 1.1;
+  letter-spacing: -0.04em; text-wrap: balance;
+}
+p { margin: 0; }
+.lead { font-size: var(--text-statement); font-weight: 200; line-height: 1.3; letter-spacing: -0.01em; }
+.lead b { font-weight: 400; color: var(--color-saffron-spark); }
+.note { margin-top: var(--spacing-24); color: var(--color-silver-mist); font-size: var(--text-small); }
+
+/* Chart */
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.legend { display: flex; gap: var(--spacing-24); margin: 0 0 var(--spacing-18); font-size: var(--text-small); font-weight: 400; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.bar { transform-box: fill-box; transform-origin: 50% 100%; transition: transform 700ms var(--ease-out), opacity 150ms ease; }
+.bar.dim { opacity: 0.35; }
+.axis-label { fill: var(--color-silver-mist); font: 400 14px var(--font); }
+.tip {
+  position: absolute; pointer-events: none; padding: 10px 12px; border-radius: 8px;
+  background: #141414; color: var(--color-bone-white); font-size: var(--text-nav); font-weight: 400; line-height: 1.4;
+  white-space: nowrap; opacity: 0; transform: translate(-50%, calc(-100% - 10px)) scale(0.97);
+  transition: opacity 125ms ease-out, transform 125ms var(--ease-out);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); /* taste-skill-ignore: floating tooltip overlay */
+}
+.tip.on { opacity: 1; transform: translate(-50%, calc(-100% - 10px)) scale(1); }
+
+/* Channel line-up at one size */
+.lineup { width: 100%; border-collapse: collapse; font-size: var(--text-figure); font-weight: 200; }
+.lineup th { text-align: left; font-weight: 400; color: var(--color-silver-mist); font-size: var(--text-small); padding: 0 0 var(--spacing-12); }
+.lineup td { padding: 0.32em 0; vertical-align: baseline; }
+.lineup td:not(:first-child), .lineup th:not(:first-child) { text-align: right; }
+.lineup td.peak { color: var(--color-saffron-spark); font-weight: 400; }
+
+/* Quiet figure lines */
+.figs { margin: 0; display: grid; gap: 28px; }
+.figs div { display: grid; grid-template-columns: 132px 1fr; gap: var(--spacing-24); align-items: baseline; }
+.figs dt { text-align: right; white-space: nowrap; font-size: var(--text-statement); font-weight: 400; letter-spacing: -0.02em; }
+.figs dd { margin: 0; font-size: var(--text-small); line-height: 1.5; max-width: 40ch; }
+
+/* Week readout under the bottle: the data that moves with the scroll. */
+.readout {
+  position: fixed; left: 50%; bottom: 7svh; z-index: 2; transform: translateX(-50%);
+  text-align: center; font-size: var(--text-small); font-weight: 400; color: var(--color-silver-mist);
+  opacity: 0; transition: opacity 300ms ease;
+}
+.readout.on { opacity: 1; }
+.readout strong { display: block; color: var(--color-bone-white); font-size: var(--text-figure); font-weight: 400; letter-spacing: -0.01em; }
+
+footer {
+  position: relative; z-index: 1; display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;
+  padding: 30svh var(--margin) 30px; font-size: var(--text-small); color: var(--color-silver-mist);
+}
+footer nav, footer .links { position: static; display: flex; gap: var(--spacing-24); padding: 0; text-transform: none; letter-spacing: 0; font-weight: 400; font-size: var(--text-small); }
+footer .links a { color: var(--color-bone-white); text-decoration: none; }
+footer .end { text-align: right; }
+
+/* Entrances: only once the script is running, so content never stays hidden without it. */
+.js [data-reveal] > * { opacity: 0; transform: translateY(24px); transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out); }
+.js [data-reveal].in > * { opacity: 1; transform: none; }
+.js [data-reveal].in > *:nth-child(2) { transition-delay: 70ms; }
+.js [data-reveal].in > *:nth-child(3) { transition-delay: 140ms; }
+.js [data-reveal].in > *:nth-child(4) { transition-delay: 210ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .js [data-reveal] > * { transform: none; transition: opacity 200ms ease; }
+  .bar { transition: opacity 150ms ease; }
+  .btn { transition: background-color 150ms ease; }
+  .btn:active { transform: none; }
+}
+
+@media (max-width: 767px) {
+  :root { --margin: 20px; }
+  nav ul { display: none; }
+  section { padding: 96px var(--margin); min-height: auto; }
+  .hero { min-height: 100svh; }
+  .wordmark { width: 100%; font-size: var(--text-statement); letter-spacing: 0.42em; text-indent: 0.42em; }
+  .hero-row { grid-template-columns: 1fr; gap: var(--spacing-12); text-align: center; }
+  .hero-row > :first-child { text-align: center; }
+  .hero-row .btn { width: 100%; }
+  .col { width: 100%; }
+  .mid { display: block; }
+  /* On a phone the text panels pass in front of the bottle on the page ground. */
+  .panel { background: var(--color-void); padding: var(--spacing-30) 0 var(--spacing-60); }
+  /* Each screen: the bottle alone first, then its panel rises over it on the page ground. */
+  section.mid { padding-top: 72svh; }
+  .figs div { grid-template-columns: 104px 1fr; gap: 16px; }
+  .figs dt { font-size: var(--text-figure); }
+  .readout { display: none; }
+  footer { grid-template-columns: 1fr; gap: 8px; padding-top: 20svh; }
+  footer .end { text-align: left; }
+}
+</style>
+</head>
+<body>
+<div class="stage" aria-hidden="true"><canvas id="stage"></canvas></div>
+
+<nav aria-label="Secciones">
+  <a class="mark" href="#top">
+    <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M2 16 9 2l7 14z" fill="#8052ff"/><path d="M9 2l7 14H9z" fill="#15846e"/></svg>
+    <span>Planning US</span>
+  </a>
+  <ul>
+    <li><a href="#forecast">Forecast</a></li>
+    <li><a href="#canales">Canales</a></li>
+    <li><a href="#riesgos">Riesgos</a></li>
+  </ul>
+</nav>
+
+<main id="top">
+  <section class="hero" aria-labelledby="hero-title" data-reveal>
+    <h1 id="hero-title" class="wordmark">ESSENCE</h1>
+    <p class="statement">Un SKU, un mercado, doce semanas por delante.</p>
+    <div class="hero-row">
+      <span>Forecast 12 sem <strong class="num" data-k="fcTotal">0</strong></span>
+      <button class="btn" id="reroll" type="button">Nuevo escenario</button>
+      <span>Cobertura <strong class="num" data-k="coverage">0</strong></span>
+    </div>
+  </section>
+
+  <section class="mid" id="resumen" aria-labelledby="resumen-h">
+    <div class="col col-left panel" data-reveal>
+      <h2 id="resumen-h">Resumen del ciclo</h2>
+      <p class="lead">Doce semanas piden <b class="num" data-k="fcTotal">0</b>, <b class="num" data-k="growth">0</b> sobre el año pasado. Hay <b class="num" data-k="stock">0</b> en stock: <b class="num" data-k="coverage">0</b> de cobertura.</p>
+      <p class="note">Cifras simuladas para esta demo. Escenario <span class="num" data-k="seed">0</span>.</p>
+    </div>
+  </section>
+
+  <section class="mid" id="forecast" aria-labelledby="forecast-h">
+    <div class="col col-right panel" data-reveal>
+      <h2 id="forecast-h">Forecast semanal</h2>
+      <div class="legend" aria-hidden="true"><span><i style="background:var(--series-forecast)"></i>Forecast</span><span><i style="background:var(--series-ly)"></i>Año anterior</span></div>
+      <div class="chart" id="chart"></div>
+      <p class="note">El pico cae en la semana <span class="num" data-k="peakWeek">0</span>, con <span class="num" data-k="peakUnits">0</span>.</p>
+    </div>
+  </section>
+
+  <section class="mid" id="canales" aria-labelledby="canales-h">
+    <div class="col col-left panel" data-reveal>
+      <h2 id="canales-h">Reparto por canal</h2>
+      <table class="lineup" id="lineup">
+        <thead><tr><th scope="col">Canal</th><th scope="col">Peso</th><th scope="col">Unidades</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="note">En ámbar, el canal con más volumen.</p>
+    </div>
+  </section>
+
+  <section class="mid" id="riesgos" aria-labelledby="riesgos-h">
+    <div class="col col-right panel" data-reveal>
+      <h2 id="riesgos-h">Qué vigilar</h2>
+      <dl class="figs" id="figs"></dl>
+    </div>
+  </section>
+</main>
+
+<div class="readout" id="readout" aria-live="off"><strong class="num" id="ro-week">0</strong><span class="num" id="ro-units">0</span></div>
+
+<footer>
+  <span>Demo interna, datos simulados</span>
+  <span class="links"><a href="#forecast">Forecast</a><a href="#canales">Canales</a><a href="#riesgos">Riesgos</a></span>
+  <span class="end">Modelo 3D procedural · 2026</span>
+</footer>
+
+<noscript><p style="position:relative;z-index:2;padding:0 32px 32px">Esta demo necesita JavaScript para dibujar el frasco y generar las cifras.</p></noscript>
+
+<script type="module">
+import * as THREE from 'three';
+/*__FACTORY__*/
+/*__DECALS__*/
+
+document.documentElement.classList.replace('no-js', 'js');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmt = new Intl.NumberFormat('es-ES');
+const fmt1 = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+// ---------- Simulated data, seeded so a scenario can be shared by its number ----------
+function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const WEEKS = [42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 1];
+const SEASON = [0.86, 0.9, 0.95, 1.0, 1.12, 1.42, 1.18, 1.22, 1.46, 1.58, 0.98, 0.64]; // Black Friday W47, holiday W50-51
+const CHANNELS = ['Grandes almacenes', 'Perfumería especializada', 'E-commerce de retailers', 'Venta directa online', 'Travel retail', 'Outlet y off-price'];
+function scenario(seed) {
+  const r = rng(seed);
+  const base = 3200 + r() * 1400;
+  const growth = -0.04 + r() * 0.16;
+  const weeks = WEEKS.map((w, i) => {
+    const fc = Math.round(base * SEASON[i] * (0.92 + r() * 0.16));
+    const ly = Math.round(fc / (1 + growth) * (0.94 + r() * 0.12));
+    return { w, fc, ly };
+  });
+  const fcTotal = weeks.reduce((s, x) => s + x.fc, 0);
+  const lyTotal = weeks.reduce((s, x) => s + x.ly, 0);
+  const avg = fcTotal / weeks.length;
+  const stock = Math.round(avg * (4.5 + r() * 5));
+  const openPo = Math.round(avg * (1 + r() * 2.5) / 10) * 10;
+  const peak = weeks.reduce((a, b) => (b.fc > a.fc ? b : a));
+  let wts = CHANNELS.map(() => 0.4 + r()); wts[0] += 0.9; wts[1] += 0.7; wts[2] += 0.5;
+  const sum = wts.reduce((a, b) => a + b, 0);
+  const channels = CHANNELS.map((name, i) => ({ name, share: wts[i] / sum, units: Math.round(fcTotal * wts[i] / sum) }));
+  // first week where cumulative forecast exceeds stock + open PO
+  let cum = 0, gap = null;
+  for (const x of weeks) { cum += x.fc; if (cum > stock + openPo) { gap = x.w; break; } }
+  return { seed, weeks, fcTotal, lyTotal, growth: fcTotal / lyTotal - 1, stock, openPo, coverage: stock / avg, peak, channels, gap, mape: 0.08 + r() * 0.1, bias: -0.05 + r() * 0.1 };
+}
+
+// ---------- Rendering of figures ----------
+const values = new Map(); // element -> last numeric value, for counting
+function setNum(el, to, format) {
+  const from = values.get(el) ?? 0; values.set(el, to);
+  if (reduce) { el.textContent = format(to); return; }
+  const t0 = performance.now(), dur = 900;
+  const step = (t) => {
+    const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = format(from + (to - from) * e);
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+const pct = (v) => `${v >= 0 ? '+' : '−'}${fmt1.format(Math.abs(v * 100))} %`;
+const units = (v) => `${fmt.format(Math.round(v))} u`;
+const weeksF = (v) => `${fmt1.format(v)} sem`;
+
+let S = null;
+function render(s) {
+  S = s;
+  const map = { fcTotal: [s.fcTotal, units], growth: [s.growth, pct], stock: [s.stock, units], coverage: [s.coverage, weeksF], peakUnits: [s.peak.fc, units] };
+  document.querySelectorAll('[data-k]').forEach((el) => {
+    const k = el.dataset.k;
+    if (k === 'seed') el.textContent = `#${s.seed}`;
+    else if (k === 'peakWeek') el.textContent = String(s.peak.w);
+    else if (map[k]) setNum(el, map[k][0], map[k][1]);
+  });
+  drawChart(s);
+  const tb = document.querySelector('#lineup tbody');
+  const top = s.channels.reduce((a, b) => (b.units > a.units ? b : a));
+  tb.innerHTML = s.channels.map((c) => `<tr><td${c === top ? ' class="peak"' : ''}>${c.name}</td><td class="num">${fmt1.format(c.share * 100)} %</td><td class="num">${fmt.format(c.units)}</td></tr>`).join('');
+  const figs = [
+    [weeksF(s.coverage), `de cobertura con el stock actual de ${units(s.stock)}.`],
+    [units(s.openPo), 'en pedidos abiertos con fecha de llegada dentro del horizonte.'],
+    [s.gap ? `S${s.gap}` : 'Ninguna', s.gap ? 'es la primera semana en la que el forecast acumulado supera stock más pedidos.' : 'semana del horizonte queda sin cubrir con stock y pedidos.'],
+    [`${fmt1.format(s.mape * 100)} %`, `de error medio del forecast en las últimas 8 semanas, con un sesgo de ${pct(s.bias)}.`],
+  ];
+  document.getElementById('figs').innerHTML = figs.map(([a, b]) => `<div><dt class="num">${a}</dt><dd>${b}</dd></div>`).join('');
+  updateReadout(lastProgress, true);
+}
+
+// ---------- Chart: grouped bars, forecast vs last year, one axis ----------
+const chartEl = document.getElementById('chart');
+const tip = Object.assign(document.createElement('div'), { className: 'tip' });
+chartEl.append(tip);
+function barPath(x, y, w, h, r) { r = Math.min(r, w / 2, h); return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`; }
+function drawChart(s) {
+  const W = 440, H = 240, padB = 26, gw = W / s.weeks.length, bw = Math.max(6, (gw - 8) / 2);
+  const max = Math.max(...s.weeks.flatMap((x) => [x.fc, x.ly])) * 1.05;
+  const y = (v) => (H - padB) * (1 - v / max);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Forecast semanal frente al año anterior, semanas ${s.weeks[0].w} a ${s.weeks.at(-1).w}">`;
+  s.weeks.forEach((x, i) => {
+    const gx = i * gw + 3;
+    svg += `<g data-i="${i}">`;
+    svg += `<rect x="${i * gw}" y="0" width="${gw}" height="${H}" fill="transparent"/>`;
+    svg += `<path class="bar" data-s="fc" d="${barPath(gx, y(x.fc), bw, H - padB - y(x.fc), 4)}" fill="var(--series-forecast)"/>`;
+    svg += `<path class="bar" data-s="ly" d="${barPath(gx + bw + 2, y(x.ly), bw, H - padB - y(x.ly), 4)}" fill="var(--series-ly)"/>`;
+    if (i % 3 === 0) svg += `<text class="axis-label" x="${gx}" y="${H - 6}">S${x.w}</text>`;
+    svg += `</g>`;
+  });
+  svg += `</svg>`;
+  svg += `<table class="sr-only"><caption>Forecast semanal (unidades)</caption><tr><th>Semana</th><th>Forecast</th><th>Año anterior</th></tr>${s.weeks.map((x) => `<tr><td>${x.w}</td><td>${x.fc}</td><td>${x.ly}</td></tr>`).join('')}</table>`;
+  chartEl.querySelectorAll('svg, table').forEach((n) => n.remove());
+  chartEl.insertAdjacentHTML('afterbegin', svg);
+  const bars = chartEl.querySelectorAll('.bar');
+  if (!reduce && !chartEl.dataset.grown) bars.forEach((b) => (b.style.transform = 'scaleY(0.02)'));
+  chartEl.querySelectorAll('g[data-i]').forEach((g) => {
+    g.addEventListener('pointerenter', () => {
+      const x = s.weeks[+g.dataset.i], box = g.getBoundingClientRect(), host = chartEl.getBoundingClientRect();
+      tip.innerHTML = `Semana ${x.w}<br>Forecast <b class="num">${fmt.format(x.fc)}</b> · Año anterior <b class="num">${fmt.format(x.ly)}</b>`;
+      tip.style.left = `${box.left - host.left + box.width / 2}px`;
+      tip.style.top = `${host.height * 0.1}px`;
+      tip.classList.add('on');
+      bars.forEach((b) => b.classList.toggle('dim', b.parentNode !== g));
+    });
+    g.addEventListener('pointerleave', () => { tip.classList.remove('on'); bars.forEach((b) => b.classList.remove('dim')); });
+  });
+  if (chartEl.dataset.grown) bars.forEach((b) => (b.style.transform = ''));
+}
+function growBars() {
+  if (chartEl.dataset.grown) return;
+  chartEl.dataset.grown = '1';
+  chartEl.querySelectorAll('.bar').forEach((b, i) => { b.style.transitionDelay = `${Math.floor(i / 2) * 40}ms`; requestAnimationFrame(() => (b.style.transform = '')); });
+}
+
+// ---------- Entrances ----------
+const io = new IntersectionObserver((entries) => entries.forEach((en) => {
+  if (!en.isIntersecting) return;
+  en.target.classList.add('in');
+  if (en.target.querySelector('#chart')) setTimeout(growBars, 200);
+  io.unobserve(en.target);
+}), { threshold: 0.25 });
+document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el));
+
+// ---------- The bottle: one lit exhibit, turned by the scroll ----------
+const canvas = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+configureFragranceFlaconTwoZoneRenderer(renderer);
+const scene = new THREE.Scene();
+scene.environment = createFragranceFlaconTwoZoneEnvironment(renderer);
+scene.add(createFragranceFlaconTwoZoneLookDevLights('reference'));
+const model = createFragranceFlaconTwoZoneModel();
+applyFrontDecals(model);
+const pivot = new THREE.Group();
+const box = new THREE.Box3().setFromObject(model);
+model.position.sub(box.getCenter(new THREE.Vector3()));
+pivot.add(model);
+scene.add(pivot);
+const camera = new THREE.PerspectiveCamera(22, 1, 0.1, 100);
+let W = 1, H = 1, phone = false;
+const bsize = box.getSize(new THREE.Vector3());
+function layout() {
+  W = innerWidth; H = innerHeight; phone = W < 768;
+  renderer.setSize(W, H, false);
+  camera.aspect = W / H;
+  dirty = true;
+}
+// Hero: the bottle sits small above the wordmark (counter object). Leaving the hero it grows
+// to the centre of the room, where it stays for every later screen.
+function placeCamera(t) {
+  const share = phone ? 0.42 + 0.08 * t : 0.46 + 0.2 * t;            // bottle height / viewport
+  const lift = phone ? H * (0.2 - 0.12 * t) : H * (0.16 - 0.12 * t);  // view offset: bottle above centre
+  const dist = (bsize.y / share) / 2 / Math.tan((camera.fov * Math.PI) / 360);
+  camera.position.set(0, 0, dist);
+  camera.lookAt(0, 0, 0);
+  camera.setViewOffset(W, H, 0, lift, W, H);
+  camera.updateProjectionMatrix();
+}
+let dirty = true, target = 0, current = 0, lastProgress = 0, heroT = 0, heroCur = 0;
+const readout = document.getElementById('readout'), roWeek = document.getElementById('ro-week'), roUnits = document.getElementById('ro-units');
+function updateReadout(p, force) {
+  if (!S) return;
+  const i = Math.min(S.weeks.length - 1, Math.max(0, Math.floor(p * S.weeks.length)));
+  const x = S.weeks[i];
+  if (force || roWeek.dataset.i !== String(i)) {
+    roWeek.dataset.i = String(i);
+    roWeek.textContent = `Semana ${x.w}`;
+    roUnits.textContent = `${fmt.format(x.fc)} u forecast · ${fmt.format(x.ly)} u año anterior`;
+  }
+  readout.classList.toggle('on', p > 0.12 && p < 0.97);
+}
+function onScroll() {
+  const max = document.documentElement.scrollHeight - innerHeight;
+  lastProgress = max > 0 ? scrollY / max : 0;
+  target = reduce ? 0.35 : lastProgress * Math.PI * 2;
+  heroT = reduce ? (scrollY > innerHeight * 0.5 ? 1 : 0) : Math.min(1, scrollY / (innerHeight * 0.8));
+  updateReadout(lastProgress);
+  const ids = ['forecast', 'canales', 'riesgos'];
+  ids.forEach((id) => { const sec = document.getElementById(id), r = sec.getBoundingClientRect(); document.querySelector(`nav a[href="#${id}"]`).setAttribute('aria-current', String(r.top < innerHeight / 2 && r.bottom > innerHeight / 2)); });
+  dirty = true;
+}
+addEventListener('scroll', onScroll, { passive: true });
+addEventListener('resize', layout);
+function frame() {
+  requestAnimationFrame(frame);
+  const d = target - current;
+  if (Math.abs(d) > 0.0005) { current += d * (reduce ? 1 : 0.09); dirty = true; }
+  const dh = heroT - heroCur;
+  if (Math.abs(dh) > 0.0005) { heroCur += dh * (reduce ? 1 : 0.12); dirty = true; }
+  if (!dirty) return;
+  placeCamera(heroCur);
+  pivot.rotation.y = current + 0.35;
+  pivot.rotation.x = reduce ? 0 : Math.sin(current) * 0.06;
+  renderer.render(scene, camera);
+  dirty = false;
+}
+layout();
+onScroll();
+THREE.DefaultLoadingManager.onLoad = () => (dirty = true);
+
+// ---------- The live thing: a new simulated scenario, shareable by number ----------
+const fromHash = Number((location.hash.match(/seed=(\d+)/) || [])[1]);
+render(scenario(fromHash || 41));
+document.getElementById('reroll').addEventListener('click', () => {
+  const seed = 1000 + Math.floor(Math.random() * 9000);
+  history.replaceState(null, '', `#seed=${seed}`);
+  render(scenario(seed));
+});
+frame();
+window.__ready = true;
+</script>
+</body>
+</html>

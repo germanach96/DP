@@ -1,0 +1,32 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Flacon review</title>
+<style>html,body{margin:0;background:#fff;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/examples/jsm/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+</head><body>
+<script type="module">
+import * as THREE from 'three';
+import * as F from './dist/createObjectModel.js';
+import { applyFrontDecals } from './decals.js';
+const q = new URLSearchParams(location.search);
+const az = +(q.get('az') || 0), el = +(q.get('el') || 0), mode = q.get('mode') || 'reference';
+const bg = q.get('bg') || '#ffffff';
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight);
+F.configureFragranceFlaconTwoZoneRenderer(renderer);
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(bg);
+scene.environment = F.createFragranceFlaconTwoZoneEnvironment(renderer);
+scene.add(F.createFragranceFlaconTwoZoneLookDevLights(mode));
+const model = F.createFragranceFlaconTwoZoneModel();
+applyFrontDecals(model);
+if (q.get('stripped') === '1') model.traverse(o => { if (o.isMesh) o.material = new THREE.MeshBasicMaterial({ color: o.material.color ? o.material.color.clone() : 0x808080, transparent: !!o.material.transparent, opacity: o.material.opacity ?? 1 }); });
+scene.add(model);
+const cam = new THREE.PerspectiveCamera(20, innerWidth / innerHeight, 0.01, 100);
+F.frameFragranceFlaconTwoZoneCamera(cam, model, { margin: 1.39, azimuthDeg: az, elevationDeg: el });
+// Reference-framing match: the photo places the bottle centre ~62px below frame centre.
+const dy = +(q.get('dy') ?? 62); cam.setViewOffset(innerWidth, innerHeight, 0, -dy, innerWidth, innerHeight);
+await new Promise((res) => { const m = THREE.DefaultLoadingManager; if (!m.itemsLoaded && !m.itemsTotal) return setTimeout(res, 50); const prev = m.onLoad; m.onLoad = () => { prev && prev(); res(); }; setTimeout(res, 8000); });
+renderer.render(scene, cam);
+window.__scene = scene; window.__model = model; window.__info = []; model.traverse(o => { if (o.isMesh) { const b = new THREE.Box3().setFromObject(o); window.__info.push([o.name, o.visible, o.material?.type, o.material?.visible, o.material?.opacity, b.min.toArray().map(v=>+v.toFixed(2)), b.max.toArray().map(v=>+v.toFixed(2)), o.geometry.attributes.position.count]); } });
+window.__ready = true;
+</script></body></html>

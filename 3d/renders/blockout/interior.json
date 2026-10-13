@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "kind": "interior-difference",
+  "baseline": "reference.png",
+  "render": "renders/blockout/front.png",
+  "band": {
+    "from": 0.0,
+    "to": 1.0
+  },
+  "grid": 192,
+  "cellsCompared": 31398,
+  "warnings": [],
+  "interiorDifference": 0.10018570073916423,
+  "status": "measured"
+}

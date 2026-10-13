@@ -1,0 +1,87 @@
+{
+  "ok": true,
+  "verdict": "pass",
+  "confidence": 0.781,
+  "estimatedFidelity": 0.781,
+  "targetThreshold": 0.7,
+  "materialId": "emblem-green",
+  "sourceImage": "/home/user/DP/3d/material-evidence/disc-crop.png",
+  "outDir": "/home/user/DP/3d/material-evidence/disc",
+  "palette": [
+    "#027257",
+    "#046C51",
+    "#131619",
+    "#2F3435",
+    "#195D4D"
+  ],
+  "maps": {
+    "albedo": {
+      "path": "/home/user/DP/3d/material-evidence/disc/emblem-green_albedo.png",
+      "url": "material-evidence/disc/emblem-green_albedo.png",
+      "channel": "albedo",
+      "source": "reference-pixel-extraction"
+    },
+    "roughness": {
+      "path": "/home/user/DP/3d/material-evidence/disc/emblem-green_roughness.png",
+      "url": "material-evidence/disc/emblem-green_roughness.png",
+      "channel": "roughness",
+      "source": "reference-pixel-extraction"
+    },
+    "height": {
+      "path": "/home/user/DP/3d/material-evidence/disc/emblem-green_height.png",
+      "url": "material-evidence/disc/emblem-green_height.png",
+      "channel": "height",
+      "source": "reference-pixel-extraction"
+    },
+    "normal": {
+      "path": "/home/user/DP/3d/material-evidence/disc/emblem-green_normal.png",
+      "url": "material-evidence/disc/emblem-green_normal.png",
+      "channel": "normal",
+      "source": "reference-pixel-extraction"
+    },
+    "ao": {
+      "path": "/home/user/DP/3d/material-evidence/disc/emblem-green_ao.png",
+      "url": "material-evidence/disc/emblem-green_ao.png",
+      "channel": "ao",
+      "source": "reference-pixel-extraction"
+    }
+  },
+  "diagnostics": {
+    "sourceWidth": 140,
+    "sourceHeight": 100,
+    "mapSize": 1024,
+    "cropBBoxPixels": {
+      "x": 0,
+      "y": 0,
+      "width": 140,
+      "height": 100
+    },
+    "mask": {
+      "backgroundColor": "#0E0D0E",
+      "backgroundNoise": 21.954,
+      "transparentPixelFraction": 0.0,
+      "foregroundCoverage": 0.9232
+    },
+    "mapStats": {
+      "valueRange": 0.2864,
+      "heightP90Gradient": 0.08528,
+      "roughnessBase": 0.691,
+      "roughnessVariation": 0.145,
+      "normalStrength": 0.256,
+      "blurRadius": 21
+    },
+    "palette": [
+      "#027257",
+      "#046C51",
+      "#131619",
+      "#2F3435",
+      "#195D4D"
+    ]
+  },
+  "warnings": [
+    "image is not clearly isolated from background; using most pixels as material evidence",
+    "object/background separation is weak",
+    "single-image inverse rendering cannot prove true physical PBR; confidence is capped"
+  ],
+  "limitation": "single-image PBR extraction is an estimate; 70%+ extraction confidence still needs render screenshot review"
+}

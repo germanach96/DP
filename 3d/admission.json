@@ -1,0 +1,14 @@
+{
+  "admitted": true,
+  "reasons": [],
+  "provenance": {
+    "viewpoint": "front",
+    "sourcePath": "/home/user/DP/3d/reference.png",
+    "width": 1080,
+    "height": 1080,
+    "foregroundCoverage": 0.2277,
+    "largestComponentFraction": 1.0,
+    "pHash": 12153714228757179050,
+    "duplicateOfHash": null
+  }
+}

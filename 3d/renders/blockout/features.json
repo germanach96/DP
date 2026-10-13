@@ -1,0 +1,4 @@
+[
+ {"id": "two-zone-body", "score": 0.85, "visibleInPair": true, "notes": "Green top third over black lower two thirds, split at matching height (render y~430 vs reference y~566 in source px after sheet scaling); materials still flat at blockout."},
+ {"id": "body-silhouette", "score": 0.85, "visibleInPair": true, "notes": "Filleted tapered rectangle matches W:H 1:1.62; shoulder and base fillets match; front/back edges are sharp in depth (extrusion without bevel)."}
+]

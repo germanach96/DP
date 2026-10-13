@@ -1,0 +1,86 @@
+{
+  "ok": true,
+  "verdict": "pass",
+  "confidence": 0.833,
+  "estimatedFidelity": 0.833,
+  "targetThreshold": 0.7,
+  "materialId": "print-green",
+  "sourceImage": "/home/user/DP/3d/material-evidence/print-crop.png",
+  "outDir": "/home/user/DP/3d/material-evidence/print",
+  "palette": [
+    "#010301",
+    "#060202",
+    "#030E09",
+    "#0E241C",
+    "#214337"
+  ],
+  "maps": {
+    "albedo": {
+      "path": "/home/user/DP/3d/material-evidence/print/print-green_albedo.png",
+      "url": "print-green_albedo.png",
+      "channel": "albedo",
+      "source": "reference-pixel-extraction"
+    },
+    "roughness": {
+      "path": "/home/user/DP/3d/material-evidence/print/print-green_roughness.png",
+      "url": "print-green_roughness.png",
+      "channel": "roughness",
+      "source": "reference-pixel-extraction"
+    },
+    "height": {
+      "path": "/home/user/DP/3d/material-evidence/print/print-green_height.png",
+      "url": "print-green_height.png",
+      "channel": "height",
+      "source": "reference-pixel-extraction"
+    },
+    "normal": {
+      "path": "/home/user/DP/3d/material-evidence/print/print-green_normal.png",
+      "url": "print-green_normal.png",
+      "channel": "normal",
+      "source": "reference-pixel-extraction"
+    },
+    "ao": {
+      "path": "/home/user/DP/3d/material-evidence/print/print-green_ao.png",
+      "url": "print-green_ao.png",
+      "channel": "ao",
+      "source": "reference-pixel-extraction"
+    }
+  },
+  "diagnostics": {
+    "sourceWidth": 240,
+    "sourceHeight": 200,
+    "mapSize": 1024,
+    "cropBBoxPixels": {
+      "x": 2,
+      "y": 0,
+      "width": 236,
+      "height": 200
+    },
+    "mask": {
+      "backgroundColor": "#000000",
+      "backgroundNoise": 0.0,
+      "transparentPixelFraction": 0.0,
+      "foregroundCoverage": 0.181
+    },
+    "mapStats": {
+      "valueRange": 0.2238,
+      "heightP90Gradient": 0.01779,
+      "roughnessBase": 0.68,
+      "roughnessVariation": 0.05,
+      "normalStrength": 0.177,
+      "blurRadius": 21
+    },
+    "palette": [
+      "#010301",
+      "#060202",
+      "#030E09",
+      "#0E241C",
+      "#214337"
+    ]
+  },
+  "warnings": [
+    "single-image inverse rendering cannot prove true physical PBR; confidence is capped",
+    "low value range weakens height/roughness inference"
+  ],
+  "limitation": "single-image PBR extraction is an estimate; 70%+ extraction confidence still needs render screenshot review"
+}

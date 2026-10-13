@@ -1,0 +1,46 @@
+{
+  "model": "fragrance-flacon-two-zone",
+  "specifiedComponents": 7,
+  "builtParts": 8,
+  "errors": 0,
+  "warnings": 5,
+  "result": "pass",
+  "findings": [
+    {
+      "check": "detail-dangling",
+      "severity": "warning",
+      "subject": "split-line",
+      "detail": "mapsTo 'body-lower/split-line' matches no component, localFeature or localOverride"
+    },
+    {
+      "check": "detail-dangling",
+      "severity": "warning",
+      "subject": "wordmark",
+      "detail": "mapsTo 'text-decal/wordmark' matches no component, localFeature or localOverride"
+    },
+    {
+      "check": "detail-dangling",
+      "severity": "warning",
+      "subject": "subline",
+      "detail": "mapsTo 'text-decal/subline' matches no component, localFeature or localOverride"
+    },
+    {
+      "check": "detail-dangling",
+      "severity": "warning",
+      "subject": "shoulder-fillet",
+      "detail": "mapsTo 'body-upper/shoulder-fillet' matches no component, localFeature or localOverride"
+    },
+    {
+      "check": "detail-dangling",
+      "severity": "warning",
+      "subject": "cap-edge-highlights",
+      "detail": "mapsTo 'cap-black/cap-edge-highlights' matches no component, localFeature or localOverride"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "Body lower (black lacquer)",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    }
+  ]
+}
