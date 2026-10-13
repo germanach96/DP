@@ -1,4 +1,4 @@
-# Skills y herramientas de diseño obligatorias: Impeccable, Emil Kowalski, Taste, Figma y Playwright
+# Skills y herramientas de diseño obligatorias: Impeccable, Emil Kowalski, Taste, img2threejs, Figma y Playwright
 
 > Cómo usar este archivo: cópialo en la raíz del repo y añade al `CLAUDE.md` del proyecto la línea
 > `@SKILLS-DISENO.md` (o pega su contenido dentro de `CLAUDE.md` / `.claude/CLAUDE.md`).
@@ -11,7 +11,7 @@
 | Impeccable | plugin | github.com/pbakaus/impeccable | `impeccable:impeccable` (y sus subagentes `impeccable:impeccable-finish-reviewer`, `impeccable:impeccable-documenter`) |
 | Emil Kowalski | skills | github.com/emilkowalski/skill | `emil-design-eng`, `animate`, `apple-design`, `improve-animations`… |
 | Taste | skills | github.com/Leonxlnx/taste-skill | `design-taste-frontend`, `high-end-visual-design`, `redesign-existing-projects`, `minimalist-ui`… |
-
+| img2threejs | skill | github.com/img2threejs/img2threejs (v2.0.0, commit `d508b59`) | `img2threejs` (imagen de referencia → modelo Three.js procedural en código; scripts en Python 3.10+ sin dependencias) |
 | Figma | servidor MCP | servidor remoto oficial de Figma | herramientas `mcp__figma__*` (leer diseños, variables y componentes de un enlace de Figma) |
 | Playwright | servidor MCP | paquete oficial `@playwright/mcp` (Microsoft) | herramientas `mcp__playwright__*` (abrir la página, hacer clic, capturas, medir) |
 
@@ -21,10 +21,11 @@
 
 Antes de hacer nada de lo que pida el usuario, comprueba y muestra una tabla con una fila por herramienta: **funcionando / instalada pero no activa / falta**, y el motivo.
 
-1. **Lista de skills de la sesión:** ¿aparecen `impeccable:impeccable`, `emil-design-eng` y `design-taste-frontend`?
+1. **Lista de skills de la sesión:** ¿aparecen `impeccable:impeccable`, `emil-design-eng`, `design-taste-frontend` e `img2threejs`?
 2. **Archivos:**
    - Impeccable: `~/.claude/plugins/installed_plugins.json` contiene `"impeccable@impeccable"`.
    - Emil y Taste: existen `.claude/skills/emil-design-eng/SKILL.md` y `.claude/skills/design-taste-frontend/SKILL.md` (o en `~/.claude/skills/` si se instalaron a nivel de usuario), con frontmatter `name` y `description`.
+   - img2threejs: existe `.claude/skills/img2threejs/SKILL.md` y `python3 .claude/skills/img2threejs/forge/next.py --help` responde.
 3. **Prueba real:** carga una vez cada skill con la herramienta Skill. Si da error, no está activa.
 4. **MCP:** `claude mcp list` debe mostrar `figma` y `playwright` conectados, y en la sesión deben existir herramientas `mcp__figma__…` y `mcp__playwright__…`. Si Figma aparece pero pide autenticación, no está activo.
 
@@ -54,6 +55,14 @@ Para que quede activado en el repo para cualquiera que lo abra, añade esto a `.
 npx -y skills add emilkowalski/skill --skill '*' --yes --copy
 npx -y skills add Leonxlnx/taste-skill --skill '*' --yes --copy
 ```
+**img2threejs (skill del proyecto):** es la copia completa del repo (sin `.git`), porque la skill necesita sus scripts de `forge/`:
+```bash
+git clone --depth 1 https://github.com/img2threejs/img2threejs /tmp/img2threejs
+mkdir -p .claude/skills/img2threejs
+(cd /tmp/img2threejs && tar --exclude=.git -cf - .) | tar -xf - -C .claude/skills/img2threejs
+```
+Alternativa oficial a nivel de usuario (no queda en el repo): `npx --yes img2threejs@latest install --host claude`.
+
 `--copy` deja archivos reales en `.claude/skills/` (no enlaces), para poder versionarlos en git junto con `skills-lock.json`. Si el comando las deja en otra carpeta (por ejemplo `.agents/skills/`), cópialas a `.claude/skills/`.
 
 **Figma y Playwright (servidores MCP):** `claude mcp add` necesita un nombre **y** un comando o una URL; `claude mcp add figma` a secas no funciona. Con `--scope project` quedan guardados en `.mcp.json` del repo, que se versiona:
@@ -91,6 +100,7 @@ Cada petición del usuario es una tarea nueva: lo que cargaste en una tarea ante
 | Animación, transición, gesto, interacción | `emil-design-eng` + `animate` (y `apple-design` si hay arrastre, muelles o gestos) | Respeta `prefers-reduced-motion`; respuesta al pulsar |
 | Revisión o auditoría de diseño | `impeccable:impeccable` (critique/audit) + `emil-design-eng` | Tabla de antes / después |
 | Diseño terminado | — | Revisión final con el subagente `impeccable:impeccable-finish-reviewer` y documentación con `impeccable:impeccable-documenter` (DESIGN.md) |
+| Modelo 3D o escena Three.js a partir de una imagen de referencia | `img2threejs` (+ `impeccable:impeccable` y `emil-design-eng` para la página que lo muestra) | Seguir sus puertas de calidad y el bucle de revisión visual; capturas del modelo |
 | Hay un enlace o archivo de Figma | Leer el diseño con las herramientas `mcp__figma__…` (frames, variables, componentes) **antes** de escribir código, y usar sus valores como fuente | Comparar la captura con el frame de Figma |
 | Comprobar una página o interacción | Usar `mcp__playwright__…` para abrirla, hacer clic, arrastrar y capturar | Capturas de escritorio y móvil, en claro y oscuro; consola sin errores; tiempo de cada clic o filtro |
 
@@ -105,6 +115,6 @@ Reglas:
 
 Termina cada respuesta con esta línea:
 
-`Skills de diseño: Impeccable (…) · Emil (…) · Taste (…) · Figma MCP (…) · Playwright MCP (…)`
+`Skills de diseño: Impeccable (…) · Emil (…) · Taste (…) · img2threejs (…) · Figma MCP (…) · Playwright MCP (…)`
 
 En cada una pon "usado: qué skill" o "no aplica: motivo". Después, añade una línea con los pasos de skills que no se hicieron.
