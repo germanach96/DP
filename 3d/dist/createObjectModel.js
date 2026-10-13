@@ -951,39 +951,120 @@ export function createFragranceFlaconTwoZoneInspectControls(camera, domElement) 
 // ---------------------------------------------------------------------------------------------
 // Hand refinement (refine-code, material-pass, user review 2026-10-13). Recorded in the spec as
 // `handRefinement`; regenerate-safe because it runs after the generated factory.
-//  - body: ONE bevelled extrusion (rounded front/back edges, rounder fillets) instead of two
-//    sharp-edged extrusions; the green/black split is a local-space discard in the shader so the
+//  - body: ONE lofted superellipse body (shape approved 2026-10-13) instead of two sharp-edged
+//    extrusions; the green/black split is a local-space discard in the shader so the
 //    seam stays exact while the model turns.
 //  - glass: transmissive shell (ior 1.5) around an opaque liquid volume, faint mould-ripple normal.
 //  - lacquer: matte black with a fine grain bump. Cap: rounded box, gloss black.
 //  - lighting: studio softbox environment for the vertical highlight bands seen on the reference.
 // ---------------------------------------------------------------------------------------------
-const FLACON = { H: 1.62, D: 0.45, SPLIT: 1.075, HB: 0.487, HT: 0.5, RT: 0.1, RB: 0.14, BEVEL: 0.085 };
-function flaconShape(inset, y0, y1) {
-    const { H, HB, HT, RT, RB } = FLACON;
-    const hw = (y) => HB + (HT - HB) * (y / H) - inset;
-    const rt = Math.max(0.01, RT - inset * 0.5), rb = Math.max(0.01, RB - inset * 0.5);
-    const s = new THREE.Shape();
-    s.moveTo(-hw(y0) + rb, y0);
-    s.lineTo(hw(y0) - rb, y0);
-    s.quadraticCurveTo(hw(y0), y0, hw(y0 + rb), y0 + rb);
-    s.lineTo(hw(y1 - rt), y1 - rt);
-    s.quadraticCurveTo(hw(y1), y1, hw(y1) - rt, y1);
-    s.lineTo(-hw(y1) + rt, y1);
-    s.quadraticCurveTo(-hw(y1), y1, -hw(y1 - rt), y1 - rt);
-    s.lineTo(-hw(y0 + rb), y0 + rb);
-    s.quadraticCurveTo(-hw(y0), y0, -hw(y0) + rb, y0);
-    return s;
+// Shape approved by the user on 2026-10-13 (plans/planos-forma.png, second reference
+// shape-reference-base.jpg): a lofted body whose plan section is a superellipse "pill", with a
+// superellipse dome that closes into the neck, a superellipse floor and gently convex sides.
+// No straight runs anywhere. Units: body width = 1; z is centred on ZC, where the generated
+// factory centred its extrusion, so collar, cap and emblem keep their sockets.
+const FLACON = { H: 1.62, SPLIT: 1.075, ZC: 0.225, OLD_FRONT: 0.45, NECK: 0.12, N: 2.6 };
+const FRONT = { hw: 0.5, topB: 0.30, topN: 2.8, botB: 0.17, botN: 3.2, bulge: 0.012 };
+const SIDE = { hw: 0.20, topB: 0.20, topN: 2.4, botB: 0.13, botN: 2.8, bulge: 0.008 };
+function profile(y, p) {
+    const { H } = FLACON;
+    const yc = H - p.topB;
+    if (y >= yc)
+        return p.hw * Math.pow(Math.max(0, 1 - Math.pow((y - yc) / p.topB, p.topN)), 1 / p.topN);
+    if (y <= p.botB)
+        return p.hw * Math.pow(Math.max(0, 1 - Math.pow((p.botB - y) / p.botB, p.botN)), 1 / p.botN);
+    return p.hw + p.bulge * Math.sin((Math.PI * (y - p.botB)) / (yc - p.botB));
 }
-function bevelledBody(inset, y0, y1, depth) {
-    const b = Math.min(FLACON.BEVEL, depth / 2 - 0.01);
-    const g = new THREE.ExtrudeGeometry(flaconShape(inset + b, y0 + b, y1 - b), {
-        depth: depth - 2 * b, bevelEnabled: true, bevelThickness: b, bevelSize: b,
-        bevelSegments: 12, curveSegments: 48, steps: 1,
-    });
-    g.translate(0, 0, (FLACON.D - depth) / 2 + b); // spans [(D-depth)/2, (D+depth)/2] like the original extrusion
+// Smooth max so the dome blends into the round neck instead of pinching to a point.
+const smax = (a, b, k) => (a + b + Math.sqrt((a - b) * (a - b) + k * k)) / 2;
+// Half-width (x), half-depth (z) and superellipse exponent of the section at height y.
+function section(y, inset = 0) {
+    const { H, NECK, N } = FLACON;
+    let a = profile(y, FRONT), b = profile(y, SIDE);
+    const w = THREE.MathUtils.smoothstep(y, H - 0.45, H - 0.25); // neck blend fades in, no kink
+    a += (smax(a, NECK, 0.05) - a) * w;
+    b += (smax(b, NECK, 0.05) - b) * w;
+    const t = THREE.MathUtils.smoothstep(y, H - 0.22, H);
+    return { a: Math.max(0.004, a - inset), b: Math.max(0.004, b - inset), n: N + (2 - N) * t };
+}
+// z of the front surface at (x, y) in the body pivot frame.
+function frontZ(x, y) {
+    const { a, b, n } = section(y);
+    const u = Math.min(1, Math.abs(x) / a);
+    return FLACON.ZC + b * Math.pow(1 - Math.pow(u, n), 1 / n);
+}
+function loftBody(inset, y0, y1, rings = 180, segs = 144) {
+    const { ZC, H } = FLACON;
+    const pos = [], uv = [], idx = [];
+    for (let i = 0; i <= rings; i++) {
+        const y = y0 + (y1 - y0) * (0.5 - 0.5 * Math.cos((Math.PI * i) / rings)); // denser at both ends
+        const { a, b, n } = section(y, inset);
+        for (let j = 0; j <= segs; j++) {
+            const th = (j / segs) * Math.PI * 2 + Math.PI / 2; // seam at the back
+            const c = Math.cos(th), sn = Math.sin(th);
+            pos.push(a * Math.sign(c) * Math.pow(Math.abs(c), 2 / n), y, ZC - b * Math.sign(sn) * Math.pow(Math.abs(sn), 2 / n));
+            uv.push(j / segs, y / H);
+        }
+    }
+    const row = segs + 1;
+    for (let i = 0; i < rings; i++)
+        for (let j = 0; j < segs; j++) {
+            const p0 = i * row + j, p1 = p0 + 1, p2 = p0 + row, p3 = p2 + 1;
+            idx.push(p0, p2, p1, p1, p2, p3);
+        }
+    // close both ends with a fan (bottom is a near-point, top sits hidden under the collar)
+    for (const [ring, y, flip] of [[0, y0, false], [rings, y1, true]]) {
+        const centre = pos.length / 3;
+        pos.push(0, y, ZC);
+        uv.push(0.5, y / H);
+        for (let j = 0; j < segs; j++) {
+            const p0 = ring * row + j, p1 = p0 + 1;
+            if (flip)
+                idx.push(centre, p0, p1);
+            else
+                idx.push(centre, p1, p0);
+        }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    g.setIndex(idx);
     g.computeVertexNormals();
+    // weld the UV seam's normals so the back shows no shading line
+    const nrm = g.getAttribute('normal'), v = new THREE.Vector3(), w = new THREE.Vector3();
+    for (let i = 0; i <= rings; i++) {
+        const a = i * row, b = i * row + segs;
+        v.fromBufferAttribute(nrm, a).add(w.fromBufferAttribute(nrm, b)).normalize();
+        nrm.setXYZ(a, v.x, v.y, v.z);
+        nrm.setXYZ(b, v.x, v.y, v.z);
+    }
     return g;
+}
+// Move a mesh authored against the old flat front (z = OLD_FRONT) onto the curved front, vertex
+// by vertex, so the emblem and the print sit on the glass instead of floating off its curve.
+function conformToFront(mesh, pivot, subdivide) {
+    let g = mesh.geometry;
+    if (subdivide) {
+        g.computeBoundingBox();
+        const bb = g.boundingBox, size = bb.getSize(new THREE.Vector3()), mid = bb.getCenter(new THREE.Vector3());
+        const pg = new THREE.PlaneGeometry(size.x, size.y, 48, 48);
+        pg.translate(mid.x, mid.y, mid.z);
+        g.dispose();
+        g = pg;
+    }
+    else
+        g = g.clone();
+    const toPivot = new THREE.Matrix4().copy(pivot.matrixWorld).invert().multiply(mesh.matrixWorld);
+    const back = toPivot.clone().invert();
+    const p = g.getAttribute('position'), v = new THREE.Vector3();
+    for (let i = 0; i < p.count; i++) {
+        v.fromBufferAttribute(p, i).applyMatrix4(toPivot);
+        v.z += frontZ(v.x, v.y) - FLACON.OLD_FRONT;
+        v.applyMatrix4(back);
+        p.setXYZ(i, v.x, v.y, v.z);
+    }
+    g.computeVertexNormals();
+    mesh.geometry = g;
 }
 // Keep fragments above (keep=1) or below (keep=-1) the split, in the mesh's local space.
 function clipAtSplit(material, keep) {
@@ -1054,7 +1135,8 @@ export function refineFragranceFlaconTwoZoneModel(root) {
         oldLower.visible = false;
     if (oldUpper)
         oldUpper.visible = false;
-    const { H, D, SPLIT } = FLACON;
+    const { H, SPLIT } = FLACON;
+    root.updateMatrixWorld(true);
     const lacquer = new THREE.MeshPhysicalMaterial({
         color: 0x050505, roughness: 0.58, metalness: 0, bumpMap: lacquerGrain(), bumpScale: 0.6,
         sheen: 1, sheenRoughness: 0.4, sheenColor: new THREE.Color(0x707070),
@@ -1068,7 +1150,7 @@ export function refineFragranceFlaconTwoZoneModel(root) {
         normalMap: glassRipple(), normalScale: new THREE.Vector2(0.06, 0.06),
     });
     clipAtSplit(glass, 1);
-    const liquidGeom = bevelledBody(0.045, 0.02, H - 0.05, D - 0.09);
+    const liquidGeom = loftBody(0.022, 0.03, H - 0.05, 120, 96);
     // Liquid gets lighter toward the bottom of the green zone (reference stops #01694F -> #01775C).
     const pos = liquidGeom.getAttribute('position');
     const col = new Float32Array(pos.count * 3), top = new THREE.Color(0x035e46), low = new THREE.Color(0x0c9e72), tmp = new THREE.Color();
@@ -1080,7 +1162,7 @@ export function refineFragranceFlaconTwoZoneModel(root) {
     liquidGeom.setAttribute('color', new THREE.BufferAttribute(col, 3));
     const liquid = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.3, metalness: 0, emissive: 0x03543c, emissiveIntensity: 0.45, envMapIntensity: 0.4 });
     clipAtSplit(liquid, 1);
-    const shell = bevelledBody(0, 0, H, D);
+    const shell = loftBody(0, 0, H);
     const add = (name, geom, mat) => {
         const m = new THREE.Mesh(geom, mat);
         m.name = name;
@@ -1101,7 +1183,7 @@ export function refineFragranceFlaconTwoZoneModel(root) {
     const cap = rt.meshes['overcap'];
     if (cap) {
         cap.geometry.dispose();
-        cap.geometry = new RoundedBoxGeometry(0.35, 0.27, 0.3, 8, 0.045);
+        cap.geometry = new RoundedBoxGeometry(0.35, 0.27, 0.3, 10, 0.075);
         cap.material = capBlack;
     }
     const collar = rt.meshes['collar'];
@@ -1110,6 +1192,24 @@ export function refineFragranceFlaconTwoZoneModel(root) {
     const ring = rt.meshes['emblem-ring'];
     if (ring)
         ring.material = new THREE.MeshPhysicalMaterial({ color: 0x060606, roughness: 0.22, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.2 });
+    // The green inlay is rebuilt as a radially subdivided disc so it can follow the curved front
+    // (a cylinder cap is a flat fan and the domed body would push through it).
+    const oldDisc = rt.meshes['emblem-disc'];
+    if (oldDisc) {
+        const disc = new THREE.Mesh(new THREE.RingGeometry(0.0005, 0.2, 72, 24), oldDisc.material);
+        disc.geometry.translate(0, 0.864, FLACON.OLD_FRONT + 0.002);
+        disc.name = oldDisc.name;
+        oldDisc.visible = false;
+        oldDisc.name = 'Emblem green disc (generated, hidden)';
+        parent.add(disc);
+        disc.updateMatrixWorld(true);
+        rt.meshes['emblem-disc'] = disc;
+    }
+    for (const [id, subdivide] of [['emblem-ring', false], ['emblem-disc', false], ['emblem-glyph-decal', true], ['text-decal', true]]) {
+        const m = rt.meshes[id];
+        if (m)
+            conformToFront(m, parent, subdivide);
+    }
 }
 // Studio environment: a dark room with two tall softboxes left/right and one overhead strip, so
 // rounded edges pick up the vertical highlight bands the reference photo shows.

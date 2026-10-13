@@ -2989,6 +2989,48 @@
       "cameraView": "front",
       "notes": "",
       "aiVisionNotes": ""
+    },
+    {
+      "timestamp": "2026-10-13T20:16:37.384808+00:00",
+      "passId": "material-pass",
+      "estimatedFidelity": 0.78,
+      "aiVisionScore": 0.78,
+      "visualAcceptanceThreshold": 0.7,
+      "layerScores": {
+        "silhouetteProportion": 0.6,
+        "componentStructure": 0.86,
+        "formDetail": 0.6,
+        "materialSurface": 0.74,
+        "lightingCamera": 0.76
+      },
+      "featureReviews": [],
+      "referenceScreenshot": "reference.png",
+      "renderScreenshot": "renders/material-refine/front.png",
+      "comparisonImage": "renders/material-refine/cmp.png",
+      "cameraView": "front",
+      "notes": "",
+      "aiVisionNotes": ""
+    },
+    {
+      "timestamp": "2026-10-13T20:21:49.313871+00:00",
+      "passId": "material-pass",
+      "estimatedFidelity": 0.8,
+      "aiVisionScore": 0.8,
+      "visualAcceptanceThreshold": 0.7,
+      "layerScores": {
+        "silhouetteProportion": 0.86,
+        "componentStructure": 0.86,
+        "formDetail": 0.8,
+        "materialSurface": 0.74,
+        "lightingCamera": 0.76
+      },
+      "featureReviews": [],
+      "referenceScreenshot": "reference.png",
+      "renderScreenshot": "renders/shape-v2/front.png",
+      "comparisonImage": "renders/shape-v2/cmp.png",
+      "cameraView": "front",
+      "notes": "",
+      "aiVisionNotes": ""
     }
   ],
   "reviewHistory": [
@@ -3488,6 +3530,76 @@
         "referenceScreenshot": "reference.png",
         "renderScreenshot": "renders/material-refine/front.png",
         "comparisonImage": "renders/material-refine/cmp.png",
+        "cameraView": "front",
+        "notes": "",
+        "aiVisionNotes": ""
+      }
+    },
+    {
+      "timestamp": "2026-10-13T20:16:37.384808+00:00",
+      "passId": "material-pass",
+      "estimatedFidelity": 0.78,
+      "aiVisionScore": 0.78,
+      "visualAcceptanceThreshold": 0.7,
+      "layerScores": {
+        "silhouetteProportion": 0.6,
+        "componentStructure": 0.86,
+        "formDetail": 0.6,
+        "materialSurface": 0.74,
+        "lightingCamera": 0.76
+      },
+      "featureReviews": [],
+      "action": "refine-code",
+      "summary": "User supplied a second reference (shape-reference-base.jpg, base view of a sibling flacon) and approved orthographic plans (plans/planos-forma.png): plan section becomes a superellipse pill (n 2.6, depth 0.40), front and side outlines have no straight runs (superellipse dome closing into the neck, superellipse floor, convex sides). Body geometry must change from bevelled extrusion to a lofted superellipse body; front print and emblem must conform to the curved face.",
+      "matched": [],
+      "mismatches": [
+        "plan section rectangular instead of pill",
+        "top edge flat with corner fillets instead of continuous dome"
+      ],
+      "specFixes": [],
+      "codeFixes": [
+        "lofted superellipse body with neck-blended sections",
+        "conform emblem and decals to the curved front",
+        "rounder cap"
+      ],
+      "evidence": [],
+      "visualEvidence": {
+        "referenceScreenshot": "reference.png",
+        "renderScreenshot": "renders/material-refine/front.png",
+        "comparisonImage": "renders/material-refine/cmp.png",
+        "cameraView": "front",
+        "notes": "",
+        "aiVisionNotes": ""
+      }
+    },
+    {
+      "timestamp": "2026-10-13T20:21:49.313871+00:00",
+      "passId": "material-pass",
+      "estimatedFidelity": 0.8,
+      "aiVisionScore": 0.8,
+      "visualAcceptanceThreshold": 0.7,
+      "layerScores": {
+        "silhouetteProportion": 0.86,
+        "componentStructure": 0.86,
+        "formDetail": 0.8,
+        "materialSurface": 0.74,
+        "lightingCamera": 0.76
+      },
+      "featureReviews": [],
+      "action": "stop",
+      "summary": "User-approved shape applied after the correction budget (6/6) was exhausted: lofted superellipse pill body with domed top and floor, no straight runs; emblem and print conformed to the curved front. Tier1 vs original photo IoU 0.966, turntable pass, no degenerate views, part coverage 0 errors. Base recessed panel from the second reference is not modelled.",
+      "matched": [],
+      "mismatches": [
+        "base recessed oval panel not modelled",
+        "depth 0.40 is an estimate"
+      ],
+      "specFixes": [],
+      "codeFixes": [],
+      "evidence": [],
+      "visualEvidence": {
+        "referenceScreenshot": "reference.png",
+        "renderScreenshot": "renders/shape-v2/front.png",
+        "comparisonImage": "renders/shape-v2/cmp.png",
         "cameraView": "front",
         "notes": "",
         "aiVisionNotes": ""
@@ -4228,14 +4340,36 @@
     "source": "src/createObjectModel.ts: refineFragranceFlaconTwoZoneModel, createFragranceFlaconStudioEnvironment, createFragranceFlaconRimLights",
     "reason": "User review: glass must read as glass with reflections and texture, lower zone matte black, smooth and much rounder edges. Generator ExtrudeGeometry has bevel disabled, so the rounded body is a hand refinement.",
     "geometry": {
-      "body": "single bevelled ExtrudeGeometry, bevel 0.085u, bevelSegments 12, curveSegments 48",
-      "fillets": {
-        "top": 0.1,
-        "base": 0.14
+      "body": "lofted superellipse body (180 rings x 144 segments), plan section superellipse n 2.6 -> 2.0 at the neck",
+      "front": {
+        "hw": 0.5,
+        "dome": {
+          "b": 0.3,
+          "n": 2.8
+        },
+        "floor": {
+          "b": 0.17,
+          "n": 3.2
+        },
+        "bulge": 0.012
       },
+      "side": {
+        "hw": 0.2,
+        "dome": {
+          "b": 0.2,
+          "n": 2.4
+        },
+        "floor": {
+          "b": 0.13,
+          "n": 2.8
+        },
+        "bulge": 0.008
+      },
+      "neckBlend": "smooth max to r 0.12, faded in over y in [H-0.45, H-0.25]",
       "split": "local-space shader discard at y=1.075",
-      "cap": "RoundedBoxGeometry 0.35x0.27x0.30 r0.045",
-      "liquid": "inner bevelled volume inset 0.045u"
+      "liquid": "inner loft inset 0.022u",
+      "cap": "RoundedBoxGeometry 0.35x0.27x0.30 r0.075",
+      "emblemAndPrint": "conformed vertex-by-vertex to the curved front; inlay rebuilt as RingGeometry 72x24"
     },
     "materials": {
       "glass": "transmission 1, ior 1.5, thickness 0.09, roughness 0.035, attenuation #46c9a0 @0.45, clearcoat 1, ripple normal 0.06",
@@ -4243,6 +4377,12 @@
       "lacquer": "matte black #0b0b0b roughness 0.6, sheen 1 #8c8c8c, grain bump 0.6",
       "cap": "gloss black roughness 0.18, clearcoat 1"
     },
-    "lighting": "studio softbox PMREM environment + two side-rear rim lights"
+    "lighting": "studio softbox PMREM environment + two side-rear rim lights",
+    "shapeReference": {
+      "image": "shape-reference-base.jpg",
+      "plans": "plans/planos-forma.png",
+      "approvedByUser": "2026-10-13",
+      "note": "second reference used for shape only; depth 0.40 estimated (perspective photo)"
+    }
   }
 }

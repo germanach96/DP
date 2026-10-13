@@ -23,7 +23,7 @@
    "name": "Overcap",
    "kind": "part",
    "module": "Overcap",
-   "triangles": 3468
+   "triangles": 5292
   },
   {
    "name": "Emblem ring",
@@ -32,42 +32,48 @@
    "triangles": 4608
   },
   {
-   "name": "Emblem green disc",
+   "name": "Emblem green disc (generated, hidden)",
    "kind": "part",
-   "module": "Emblem green disc",
+   "module": "Emblem green disc (generated, hidden)",
    "triangles": 832
   },
   {
    "name": "Double-G glyph print",
    "kind": "part",
    "module": "Double-G glyph print",
-   "triangles": 1152
+   "triangles": 4608
   },
   {
    "name": "Wordmark and subline print",
    "kind": "part",
    "module": "Wordmark and subline print",
-   "triangles": 1152
+   "triangles": 4608
   },
   {
    "name": "Body lower (black lacquer)",
    "kind": "part",
    "module": "Body lower (black lacquer)",
-   "triangles": 10188
+   "triangles": 52128
   },
   {
    "name": "Body upper (green glass)",
    "kind": "part",
    "module": "Body upper (green glass)",
-   "triangles": 10188
+   "triangles": 52128
   },
   {
    "name": "Liquid",
    "kind": "part",
    "module": "Liquid",
-   "triangles": 10188
+   "triangles": 23232
+  },
+  {
+   "name": "Emblem green disc",
+   "kind": "part",
+   "module": "Emblem green disc",
+   "triangles": 3456
   }
  ],
  "unnamedMeshes": 0,
- "integralMeshes": 11
+ "integralMeshes": 12
 }
