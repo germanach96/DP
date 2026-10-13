@@ -411,9 +411,14 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true 
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 configureFragranceFlaconTwoZoneRenderer(renderer);
 const scene = new THREE.Scene();
-scene.environment = createFragranceFlaconTwoZoneEnvironment(renderer);
-scene.add(createFragranceFlaconTwoZoneLookDevLights('reference'));
+scene.environment = createFragranceFlaconStudioEnvironment(renderer);
+// Neutral key with a low fill: a matte black body stays black and is drawn by its rim light.
+const lights = createFragranceFlaconTwoZoneLookDevLights('neutral');
+lights.traverse((l) => { if (l.isHemisphereLight) l.intensity = 0.25; if (l.isDirectionalLight && l.castShadow) l.intensity = 1.6; });
+scene.add(lights);
+scene.add(createFragranceFlaconRimLights());
 const model = createFragranceFlaconTwoZoneModel();
+refineFragranceFlaconTwoZoneModel(model);
 applyFrontDecals(model);
 const pivot = new THREE.Group();
 const box = new THREE.Box3().setFromObject(model);

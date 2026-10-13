@@ -2922,6 +2922,73 @@
       "cameraView": "front",
       "notes": "",
       "aiVisionNotes": ""
+    },
+    {
+      "timestamp": "2026-10-13T19:53:43.320633+00:00",
+      "passId": "material-pass",
+      "estimatedFidelity": 0.5,
+      "aiVisionScore": 0.5,
+      "visualAcceptanceThreshold": 0.7,
+      "layerScores": {
+        "silhouetteProportion": 0.85,
+        "componentStructure": 0.85,
+        "formDetail": 0.45,
+        "materialSurface": 0.3,
+        "lightingCamera": 0.4
+      },
+      "featureReviews": [],
+      "referenceScreenshot": "reference.png",
+      "renderScreenshot": "renders/material-pass/front.png",
+      "comparisonImage": "renders/material-pass/cmp.png",
+      "cameraView": "front",
+      "notes": "",
+      "aiVisionNotes": ""
+    },
+    {
+      "timestamp": "2026-10-13T20:00:27.346546+00:00",
+      "passId": "material-pass",
+      "estimatedFidelity": 0.78,
+      "aiVisionScore": 0.8,
+      "visualAcceptanceThreshold": 0.7,
+      "layerScores": {
+        "silhouetteProportion": 0.88,
+        "componentStructure": 0.86,
+        "formDetail": 0.8,
+        "materialSurface": 0.74,
+        "lightingCamera": 0.76
+      },
+      "featureReviews": [
+        {
+          "id": "two-zone-body",
+          "score": 0.84,
+          "visibleInPair": true,
+          "notes": "green glass over black, split exact via local discard; glass now reads as a transmissive shell with wall thickness and liquid inside"
+        },
+        {
+          "id": "body-silhouette",
+          "score": 0.86,
+          "visibleInPair": true,
+          "notes": "rounded bevelled body, fillets 0.10/0.14 (rounder than the photo by user request)"
+        },
+        {
+          "id": "cap-on-collar",
+          "score": 0.84,
+          "visibleInPair": true,
+          "notes": "rounded gloss black cap"
+        },
+        {
+          "id": "front-emblem",
+          "score": 0.74,
+          "visibleInPair": true,
+          "notes": "ring now black gloss as in reference"
+        }
+      ],
+      "referenceScreenshot": "reference.png",
+      "renderScreenshot": "renders/material-refine/front.png",
+      "comparisonImage": "renders/material-refine/cmp.png",
+      "cameraView": "front",
+      "notes": "",
+      "aiVisionNotes": ""
     }
   ],
   "reviewHistory": [
@@ -3317,6 +3384,114 @@
         "notes": "",
         "aiVisionNotes": ""
       }
+    },
+    {
+      "timestamp": "2026-10-13T19:53:43.320633+00:00",
+      "passId": "material-pass",
+      "estimatedFidelity": 0.5,
+      "aiVisionScore": 0.5,
+      "visualAcceptanceThreshold": 0.7,
+      "layerScores": {
+        "silhouetteProportion": 0.85,
+        "componentStructure": 0.85,
+        "formDetail": 0.45,
+        "materialSurface": 0.3,
+        "lightingCamera": 0.4
+      },
+      "featureReviews": [],
+      "action": "refine-code",
+      "summary": "User review of the shipped page: glass zone does not read as glass (no lighting reflections, no surface texture), lower zone must be matte black (reads glossy grey), body and cap edges are hard-cut; needs smooth, much rounder edges. Spec is sound (two-zone flacon); the implementation lacks a rounded-edge body (generator ExtrudeGeometry has bevel disabled), transmissive glass with an inner liquid, a studio environment for reflection bands, and a matte lacquer.",
+      "matched": [],
+      "mismatches": [
+        "glass reads flat green",
+        "lacquer reads glossy grey not matte black",
+        "front/back edges sharp",
+        "cap edges sharp"
+      ],
+      "specFixes": [],
+      "codeFixes": [
+        "runtime refinement module 3d/refine.js: single bevelled body split by clipping planes, transmissive glass shell + inner liquid, matte black lacquer, rounded cap, studio softbox environment"
+      ],
+      "evidence": [],
+      "visualEvidence": {
+        "referenceScreenshot": "reference.png",
+        "renderScreenshot": "renders/material-pass/front.png",
+        "comparisonImage": "renders/material-pass/cmp.png",
+        "cameraView": "front",
+        "notes": "",
+        "aiVisionNotes": ""
+      }
+    },
+    {
+      "timestamp": "2026-10-13T20:00:27.346546+00:00",
+      "passId": "material-pass",
+      "estimatedFidelity": 0.78,
+      "aiVisionScore": 0.8,
+      "visualAcceptanceThreshold": 0.7,
+      "layerScores": {
+        "silhouetteProportion": 0.88,
+        "componentStructure": 0.86,
+        "formDetail": 0.8,
+        "materialSurface": 0.74,
+        "lightingCamera": 0.76
+      },
+      "featureReviews": [
+        {
+          "id": "two-zone-body",
+          "score": 0.84,
+          "visibleInPair": true,
+          "notes": "green glass over black, split exact via local discard; glass now reads as a transmissive shell with wall thickness and liquid inside"
+        },
+        {
+          "id": "body-silhouette",
+          "score": 0.86,
+          "visibleInPair": true,
+          "notes": "rounded bevelled body, fillets 0.10/0.14 (rounder than the photo by user request)"
+        },
+        {
+          "id": "cap-on-collar",
+          "score": 0.84,
+          "visibleInPair": true,
+          "notes": "rounded gloss black cap"
+        },
+        {
+          "id": "front-emblem",
+          "score": 0.74,
+          "visibleInPair": true,
+          "notes": "ring now black gloss as in reference"
+        }
+      ],
+      "action": "stop",
+      "summary": "Hand refinement from user review applied: bevelled single body (bevel 0.085u, fillets 0.10/0.14), transmissive glass shell (ior 1.5) with inner liquid and ripple normal, matte black lacquer with sheen and grain, rounded gloss cap, studio softbox environment and rim lights. Tier1 IoU 0.974 (was 0.948), turntable pass, no holes. Visual review: glass and matte black now read correctly; liquid green is still a little flatter than the photo. orchestrate_passes material gate still refuses flat-finish materials without photo maps (textureless not honoured), so the locked pipeline stays stopped at material-pass; the shipped model is the refined factory.",
+      "matched": [
+        "glass reads as glass",
+        "matte black lacquer",
+        "rounded edges",
+        "black gloss ring and cap"
+      ],
+      "mismatches": [
+        "liquid green slightly flat vs photo",
+        "front fillets rounder than reference by request"
+      ],
+      "specFixes": [],
+      "codeFixes": [],
+      "evidence": [],
+      "mapStrippedRender": "renders/material-refine/stripped.png",
+      "reviewViewpoints": [
+        "long-axis",
+        "thickness-axis",
+        "rear",
+        "left",
+        "threequarter"
+      ],
+      "visualEvidence": {
+        "referenceScreenshot": "reference.png",
+        "renderScreenshot": "renders/material-refine/front.png",
+        "comparisonImage": "renders/material-refine/cmp.png",
+        "cameraView": "front",
+        "notes": "",
+        "aiVisionNotes": ""
+      }
     }
   ],
   "lodPlan": [
@@ -3402,7 +3577,7 @@
         "key_path": "categories.material_pbr[4]",
         "score": 8.308875445178,
         "snippets": [
-          "Secondary reflective coating layer on top of the base material, simulating varnish, lacquer, or automotive paint. L\u1edbp ph\u1ee7 ph\u1ea3n x\u1ea1 th\u1ee9 c\u1ea5p n\u1eb1m tr\u00ean v\u1eadt li\u1ec7u n\u1ec1n, m\u00f4 ph\u1ecfng vecni, s\u01a1n m\u00e0i ho\u1eb7c s\u01a1n xe h\u01a1i. Recognition cues: A distinct, sharp ..."
+          "Secondary reflective coating layer on top of the base material, simulating varnish, lacquer, or automotive paint. Lớp phủ phản xạ thứ cấp nằm trên vật liệu nền, mô phỏng vecni, sơn mài hoặc sơn xe hơi. Recognition cues: A distinct, sharp ..."
         ],
         "source_refs": [
           {
@@ -3436,7 +3611,7 @@
           },
           {
             "path": "grimoire/intake/image_analysis.md",
-            "heading": "Layer 2 \u2014 Overall form & silhouette",
+            "heading": "Layer 2 — Overall form & silhouette",
             "key_path": null
           }
         ],
@@ -3459,7 +3634,7 @@
         "key_path": "categories.rendering_shader_mapping[6]",
         "score": 5.386043518442,
         "snippets": [
-          "Maps to components with hemispherical rounded ends. \u00c1nh x\u1ea1 t\u1edbi c\u00e1c b\u1ed9 ph\u1eadn c\u00f3 \u0111\u1ea7u bo tr\u00f2n d\u1ea1ng b\u00e1n c\u1ea7u. Recognition cues: Rod-like part with distinctly rounded (not flat-cut) ends, e.g. a knife spine or a safety lever D\u1ea5u hi\u1ec7u nh\u1eadn di\u1ec7n: B\u1ed9 ph\u1eadn ..."
+          "Maps to components with hemispherical rounded ends. Ánh xạ tới các bộ phận có đầu bo tròn dạng bán cầu. Recognition cues: Rod-like part with distinctly rounded (not flat-cut) ends, e.g. a knife spine or a safety lever Dấu hiệu nhận diện: Bộ phận ..."
         ],
         "source_refs": [
           {
@@ -3995,6 +4170,79 @@
       "maskWarnings": [],
       "renderHash": "4d5a3e6901edd5d2",
       "passId": "material-pass"
+    },
+    {
+      "passed": true,
+      "checks": {
+        "silhouetteIoU": 0.9742,
+        "aspectRatioDelta": 0.0123,
+        "scaleDelta": 0.0124,
+        "bilateralSymmetryError": 0.0066,
+        "colorDelta": {
+          "checked": 8,
+          "maxDeltaE": 10.37,
+          "perComponent": [
+            {
+              "componentId": null,
+              "deltaE": 0.28
+            },
+            {
+              "componentId": null,
+              "deltaE": 10.37
+            },
+            {
+              "componentId": null,
+              "deltaE": 0.09
+            },
+            {
+              "componentId": null,
+              "deltaE": 0.09
+            },
+            {
+              "componentId": null,
+              "deltaE": 0.82
+            },
+            {
+              "componentId": null,
+              "deltaE": 8.1
+            },
+            {
+              "componentId": null,
+              "deltaE": 9.86
+            },
+            {
+              "componentId": null,
+              "deltaE": 9.86
+            }
+          ],
+          "gated": true
+        }
+      },
+      "failures": [],
+      "maskWarnings": [],
+      "renderHash": "c0e5f25cb0e92b04",
+      "passId": "material-pass"
     }
-  ]
+  ],
+  "handRefinement": {
+    "source": "src/createObjectModel.ts: refineFragranceFlaconTwoZoneModel, createFragranceFlaconStudioEnvironment, createFragranceFlaconRimLights",
+    "reason": "User review: glass must read as glass with reflections and texture, lower zone matte black, smooth and much rounder edges. Generator ExtrudeGeometry has bevel disabled, so the rounded body is a hand refinement.",
+    "geometry": {
+      "body": "single bevelled ExtrudeGeometry, bevel 0.085u, bevelSegments 12, curveSegments 48",
+      "fillets": {
+        "top": 0.1,
+        "base": 0.14
+      },
+      "split": "local-space shader discard at y=1.075",
+      "cap": "RoundedBoxGeometry 0.35x0.27x0.30 r0.045",
+      "liquid": "inner bevelled volume inset 0.045u"
+    },
+    "materials": {
+      "glass": "transmission 1, ior 1.5, thickness 0.09, roughness 0.035, attenuation #46c9a0 @0.45, clearcoat 1, ripple normal 0.06",
+      "liquid": "vertex gradient #0c9e72 (low) -> #035e46 (top), emissive #03543c 0.45",
+      "lacquer": "matte black #0b0b0b roughness 0.6, sheen 1 #8c8c8c, grain bump 0.6",
+      "cap": "gloss black roughness 0.18, clearcoat 1"
+    },
+    "lighting": "studio softbox PMREM environment + two side-rear rim lights"
+  }
 }

@@ -1,7 +1,7 @@
 {
   "model": "fragrance-flacon-two-zone",
   "specifiedComponents": 7,
-  "builtParts": 8,
+  "builtParts": 11,
   "errors": 0,
   "warnings": 5,
   "result": "pass",
@@ -40,6 +40,24 @@
       "check": "part-not-specified",
       "severity": "info",
       "subject": "Body lower (black lacquer)",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "Body lower (generated, hidden)",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "Body upper (generated, hidden)",
+      "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
+    },
+    {
+      "check": "part-not-specified",
+      "severity": "info",
+      "subject": "Liquid",
       "detail": "built part has no matching component in the spec (fine for detail groups; a sign of spec drift for anything larger)"
     }
   ]

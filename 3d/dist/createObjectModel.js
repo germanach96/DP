@@ -4,6 +4,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 // bevelEnabled defaults to true on THREE.ExtrudeGeometry and rounds every
 // corner — sharp/pointed profiles (blades, fork tines, spikes) need
@@ -946,4 +947,200 @@ export function createFragranceFlaconTwoZoneInspectControls(camera, domElement) 
     controls.maxDistance = 8.0;
     controls.autoRotate = false;
     return controls;
+}
+// ---------------------------------------------------------------------------------------------
+// Hand refinement (refine-code, material-pass, user review 2026-10-13). Recorded in the spec as
+// `handRefinement`; regenerate-safe because it runs after the generated factory.
+//  - body: ONE bevelled extrusion (rounded front/back edges, rounder fillets) instead of two
+//    sharp-edged extrusions; the green/black split is a local-space discard in the shader so the
+//    seam stays exact while the model turns.
+//  - glass: transmissive shell (ior 1.5) around an opaque liquid volume, faint mould-ripple normal.
+//  - lacquer: matte black with a fine grain bump. Cap: rounded box, gloss black.
+//  - lighting: studio softbox environment for the vertical highlight bands seen on the reference.
+// ---------------------------------------------------------------------------------------------
+const FLACON = { H: 1.62, D: 0.45, SPLIT: 1.075, HB: 0.487, HT: 0.5, RT: 0.1, RB: 0.14, BEVEL: 0.085 };
+function flaconShape(inset, y0, y1) {
+    const { H, HB, HT, RT, RB } = FLACON;
+    const hw = (y) => HB + (HT - HB) * (y / H) - inset;
+    const rt = Math.max(0.01, RT - inset * 0.5), rb = Math.max(0.01, RB - inset * 0.5);
+    const s = new THREE.Shape();
+    s.moveTo(-hw(y0) + rb, y0);
+    s.lineTo(hw(y0) - rb, y0);
+    s.quadraticCurveTo(hw(y0), y0, hw(y0 + rb), y0 + rb);
+    s.lineTo(hw(y1 - rt), y1 - rt);
+    s.quadraticCurveTo(hw(y1), y1, hw(y1) - rt, y1);
+    s.lineTo(-hw(y1) + rt, y1);
+    s.quadraticCurveTo(-hw(y1), y1, -hw(y1 - rt), y1 - rt);
+    s.lineTo(-hw(y0 + rb), y0 + rb);
+    s.quadraticCurveTo(-hw(y0), y0, -hw(y0) + rb, y0);
+    return s;
+}
+function bevelledBody(inset, y0, y1, depth) {
+    const b = Math.min(FLACON.BEVEL, depth / 2 - 0.01);
+    const g = new THREE.ExtrudeGeometry(flaconShape(inset + b, y0 + b, y1 - b), {
+        depth: depth - 2 * b, bevelEnabled: true, bevelThickness: b, bevelSize: b,
+        bevelSegments: 12, curveSegments: 48, steps: 1,
+    });
+    g.translate(0, 0, (FLACON.D - depth) / 2 + b); // spans [(D-depth)/2, (D+depth)/2] like the original extrusion
+    g.computeVertexNormals();
+    return g;
+}
+// Keep fragments above (keep=1) or below (keep=-1) the split, in the mesh's local space.
+function clipAtSplit(material, keep) {
+    material.onBeforeCompile = (shader) => {
+        shader.vertexShader = shader.vertexShader
+            .replace('#include <common>', '#include <common>\nvarying float vLocalY;')
+            .replace('#include <begin_vertex>', '#include <begin_vertex>\nvLocalY = position.y;');
+        shader.fragmentShader = shader.fragmentShader
+            .replace('#include <common>', '#include <common>\nvarying float vLocalY;')
+            .replace('void main() {', `void main() {\n  if (${keep === 1 ? 'vLocalY < ' : 'vLocalY > '}${FLACON.SPLIT.toFixed(4)}) discard;`);
+    };
+    material.customProgramCacheKey = () => `clip${keep}`;
+}
+function noiseCanvas(size, seed, draw) {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    let a = seed;
+    const rnd = () => { a = (a * 1664525 + 1013904223) >>> 0; return a / 4294967296; };
+    draw(c.getContext('2d'), rnd);
+    return c;
+}
+// Fine grain for the matte lacquer (bump map, deterministic seed).
+function lacquerGrain() {
+    const c = noiseCanvas(512, 7, (g, rnd) => {
+        const img = g.createImageData(512, 512);
+        for (let i = 0; i < img.data.length; i += 4) {
+            const v = 118 + rnd() * 20;
+            img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+            img.data[i + 3] = 255;
+        }
+        g.putImageData(img, 0, 0);
+    });
+    const t = new THREE.CanvasTexture(c);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(3, 3);
+    return t;
+}
+// Faint horizontal mould ripple for the glass (tangent-space normal map, deterministic).
+function glassRipple() {
+    const c = noiseCanvas(256, 11, (g, rnd) => {
+        const img = g.createImageData(256, 256);
+        const phase = Array.from({ length: 6 }, () => rnd() * Math.PI * 2);
+        for (let y = 0; y < 256; y++) {
+            let dy = 0;
+            for (let k = 0; k < 6; k++)
+                dy += Math.cos((y / 256) * Math.PI * 2 * (k + 2) + phase[k]) / (k + 2);
+            const ny = 128 + dy * 22;
+            for (let x = 0; x < 256; x++) {
+                const i = (y * 256 + x) * 4;
+                img.data[i] = 128 + (rnd() - 0.5) * 6;
+                img.data[i + 1] = ny;
+                img.data[i + 2] = 255;
+                img.data[i + 3] = 255;
+            }
+        }
+        g.putImageData(img, 0, 0);
+    });
+    const t = new THREE.CanvasTexture(c);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(1.5, 1.5);
+    return t;
+}
+export function refineFragranceFlaconTwoZoneModel(root) {
+    const rt = root.userData.sculptRuntime;
+    const parent = rt.nodes['body-lower'];
+    const oldLower = rt.meshes['body-lower'], oldUpper = rt.meshes['body-upper'];
+    if (oldLower)
+        oldLower.visible = false;
+    if (oldUpper)
+        oldUpper.visible = false;
+    const { H, D, SPLIT } = FLACON;
+    const lacquer = new THREE.MeshPhysicalMaterial({
+        color: 0x050505, roughness: 0.58, metalness: 0, bumpMap: lacquerGrain(), bumpScale: 0.6,
+        sheen: 1, sheenRoughness: 0.4, sheenColor: new THREE.Color(0x707070),
+        envMapIntensity: 0.95, side: THREE.DoubleSide,
+    });
+    clipAtSplit(lacquer, -1);
+    const glass = new THREE.MeshPhysicalMaterial({
+        color: 0xf2fff9, metalness: 0, roughness: 0.035, transmission: 1, thickness: 0.09, ior: 1.5,
+        attenuationColor: new THREE.Color(0x46c9a0), attenuationDistance: 0.45,
+        clearcoat: 1, clearcoatRoughness: 0.02, specularIntensity: 1, envMapIntensity: 1.15,
+        normalMap: glassRipple(), normalScale: new THREE.Vector2(0.06, 0.06),
+    });
+    clipAtSplit(glass, 1);
+    const liquidGeom = bevelledBody(0.045, 0.02, H - 0.05, D - 0.09);
+    // Liquid gets lighter toward the bottom of the green zone (reference stops #01694F -> #01775C).
+    const pos = liquidGeom.getAttribute('position');
+    const col = new Float32Array(pos.count * 3), top = new THREE.Color(0x035e46), low = new THREE.Color(0x0c9e72), tmp = new THREE.Color();
+    for (let i = 0; i < pos.count; i++) {
+        const t = THREE.MathUtils.clamp((pos.getY(i) - SPLIT) / (H - SPLIT), 0, 1);
+        tmp.copy(low).lerp(top, t);
+        col.set([tmp.r, tmp.g, tmp.b], i * 3);
+    }
+    liquidGeom.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const liquid = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.3, metalness: 0, emissive: 0x03543c, emissiveIntensity: 0.45, envMapIntensity: 0.4 });
+    clipAtSplit(liquid, 1);
+    const shell = bevelledBody(0, 0, H, D);
+    const add = (name, geom, mat) => {
+        const m = new THREE.Mesh(geom, mat);
+        m.name = name;
+        m.castShadow = true;
+        m.receiveShadow = true;
+        parent.add(m);
+        return m;
+    };
+    rt.meshes['body-lower'] = add('Body lower (black lacquer)', shell, lacquer);
+    rt.meshes['body-upper'] = add('Body upper (green glass)', shell, glass);
+    rt.meshes['liquid'] = add('Liquid', liquidGeom, liquid);
+    rt.meshes['body-upper'].renderOrder = 2;
+    if (oldLower)
+        oldLower.name = 'Body lower (generated, hidden)';
+    if (oldUpper)
+        oldUpper.name = 'Body upper (generated, hidden)';
+    const capBlack = new THREE.MeshPhysicalMaterial({ color: 0x050505, roughness: 0.18, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 1.1 });
+    const cap = rt.meshes['overcap'];
+    if (cap) {
+        cap.geometry.dispose();
+        cap.geometry = new RoundedBoxGeometry(0.35, 0.27, 0.3, 8, 0.045);
+        cap.material = capBlack;
+    }
+    const collar = rt.meshes['collar'];
+    if (collar)
+        collar.material = capBlack;
+    const ring = rt.meshes['emblem-ring'];
+    if (ring)
+        ring.material = new THREE.MeshPhysicalMaterial({ color: 0x060606, roughness: 0.22, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.2 });
+}
+// Studio environment: a dark room with two tall softboxes left/right and one overhead strip, so
+// rounded edges pick up the vertical highlight bands the reference photo shows.
+export function createFragranceFlaconStudioEnvironment(renderer) {
+    const room = new THREE.Scene();
+    room.background = new THREE.Color(0x020202);
+    const panel = (w, h, intensity, pos, rotY, rotX = 0) => {
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(intensity, intensity, intensity), side: THREE.DoubleSide }));
+        m.position.set(...pos);
+        m.rotation.set(rotX, rotY, 0);
+        room.add(m);
+    };
+    panel(0.8, 6, 3.2, [-4, 0.5, 1.5], Math.PI / 2.4);
+    panel(0.8, 6, 2.4, [4, 0.5, 1.5], -Math.PI / 2.4);
+    panel(5, 1.0, 2.2, [0, 4, 0], 0, Math.PI / 2);
+    panel(2.5, 2.5, 0.5, [0, 0.6, 5], 0);
+    panel(0.6, 5, 1.6, [-1.2, 0.5, -4.5], 0);
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const tex = pmrem.fromScene(room, 0.02).texture;
+    pmrem.dispose();
+    return tex;
+}
+// Two side-rear rim lights: on a matte black body the silhouette only reads where a grazing
+// light catches the rounded edges (sheen); without them the lacquer merges with a black page.
+export function createFragranceFlaconRimLights() {
+    const g = new THREE.Group();
+    g.name = 'Flacon rim lights';
+    const left = new THREE.DirectionalLight(0xdfe8ff, 3.2);
+    left.position.set(-5, 2.5, -3.5);
+    const right = new THREE.DirectionalLight(0xfff1dc, 2.0);
+    right.position.set(5, 1.5, -3);
+    g.add(left, right);
+    return g;
 }

@@ -2,15 +2,15 @@
  "model": "fragrance-flacon-two-zone",
  "parts": [
   {
-   "name": "Body lower (black lacquer)",
+   "name": "Body lower (generated, hidden)",
    "kind": "part",
-   "module": "Body lower (black lacquer)",
+   "module": "Body lower (generated, hidden)",
    "triangles": 76
   },
   {
-   "name": "Body upper (green glass)",
+   "name": "Body upper (generated, hidden)",
    "kind": "part",
-   "module": "Body upper (green glass)",
+   "module": "Body upper (generated, hidden)",
    "triangles": 76
   },
   {
@@ -23,7 +23,7 @@
    "name": "Overcap",
    "kind": "part",
    "module": "Overcap",
-   "triangles": 1728
+   "triangles": 3468
   },
   {
    "name": "Emblem ring",
@@ -48,8 +48,26 @@
    "kind": "part",
    "module": "Wordmark and subline print",
    "triangles": 1152
+  },
+  {
+   "name": "Body lower (black lacquer)",
+   "kind": "part",
+   "module": "Body lower (black lacquer)",
+   "triangles": 10188
+  },
+  {
+   "name": "Body upper (green glass)",
+   "kind": "part",
+   "module": "Body upper (green glass)",
+   "triangles": 10188
+  },
+  {
+   "name": "Liquid",
+   "kind": "part",
+   "module": "Liquid",
+   "triangles": 10188
   }
  ],
  "unnamedMeshes": 0,
- "integralMeshes": 8
+ "integralMeshes": 11
 }
